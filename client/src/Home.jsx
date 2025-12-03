@@ -43,7 +43,7 @@ export const Home = () => {
           backgroundImage: `url(${bgImage})`,
         }}
       >
-        <main className="mx-auto flex w-full max-w-7xl flex-col gap-20 px-4 py-16">
+        <main className="mx-auto flex w-full max-w-6xl flex-col gap-20 px-4 sm:px-6 lg:px-8 py-16">
           {/* Кому будет полезен интенсив */}
              <Intensiv></Intensiv>
           {/* Программа */}

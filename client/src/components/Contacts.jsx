@@ -7,7 +7,7 @@ import Tg from "../components/img/tetega.png";
 
 export const Contacts = () => {
   return (
-    <section id="contacts" className="scroll-mt-20">
+    <section id="contacts" className="scroll-mt-20 px-2 sm:px-0">
       <div className="grid md:grid-cols-4 gap-6 items-end animate-fadeUp">
 
         {/* ЛЕВАЯ КОЛОНКА (контакты) */}

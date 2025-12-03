@@ -1,9 +1,16 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import orthos from "./img/ortho_hero.png";
 import heroBack from "./img/hero_back.jpg";
 
 export const Hero = ({ onBuyTicket }) => {
   const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [menuOpen]);
 
   return (
     <div
@@ -17,7 +24,7 @@ export const Hero = ({ onBuyTicket }) => {
       {/* ======= ШАПКА ======= */}
       <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center py-6 text-xs uppercase tracking-wide text-blue-100 px-4">
         {/* Десктоп-меню по центру с темным фоном */}
-        <nav className="hidden md:flex gap-12 bg-[#030a1c]/40 backdrop-blur-sm px-8 py-4 rounded-2xl border border-blue-800/30">
+        <nav className="hidden md:flex gap-8 lg:gap-12 bg-[#030a1c]/40 backdrop-blur-sm px-6 lg:px-8 py-4 rounded-2xl border border-blue-800/30 max-w-6xl w-full justify-center mx-auto">
           <a href="#hero" className="transition hover:text-white hover:scale-105">
             Главная
           </a>
@@ -69,7 +76,7 @@ export const Hero = ({ onBuyTicket }) => {
         />
 
         {/* панель */}
-        <div className="absolute right-0 top-0 h-full w-3/4 max-w-xs bg-[#101735] px-6 py-8 flex flex-col text-base">
+        <div className="absolute right-0 top-0 h-full w-[78%] max-w-xs bg-[#101735] px-6 py-8 flex flex-col text-base overflow-y-auto">
           {/* крестик */}
           <button
             className="self-end text-2xl text-white"
@@ -134,9 +141,9 @@ export const Hero = ({ onBuyTicket }) => {
       </div>
 
       {/* ======= КОНТЕНТ ======= */}
-      <div className="relative z-10 w-full pt-24 md:pt-20">
+      <div className="relative z-10 w-full max-w-6xl mx-auto pt-24 md:pt-20 px-4 sm:px-6 md:px-10 xl:px-16">
         {/* Остальной контент без изменений */}
-        <div className="w-full text-left pl-4 md:pl-10 xl:pl-16">
+        <div className="w-full text-left">
           <p className="text-xl font-normal uppercase tracking-[0.35em] text-blue-200">
             2-х дневный интенсив
           </p>

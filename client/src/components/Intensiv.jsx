@@ -7,7 +7,7 @@ import Noga from "../components/img/noga.png";
 export const Intensiv = () => {
   return (
     <div className='animate-fadeUp scroll-smooth'>
-      <section id="who" className="rounded-[32px] p-8 scroll-mt-10">
+      <section id="who" className="rounded-[32px] p-6 sm:p-8 scroll-mt-10 max-w-6xl mx-auto">
 
         {/* Заголовок */}
         <h2 className="text-center text-2xl md:text-3xl lg:text-4xl font-bold tracking-wide text-white">

@@ -93,11 +93,11 @@ export default function Programma() {
     const isOpen = openItems.includes(item.id);
 
     return (
-      <div 
+      <div
         key={item.id}
-        className="relative w-full md:w-[calc(33.333%-16px)] max-w-sm
+        className="relative w-full sm:max-w-md md:max-w-sm lg:max-w-md
                    p-6 rounded-3xl border border-white/80 shadow-white/10 bg-gradient-to-br from-[#122C58] via-[#1D478F] to-[#122C58]
-                   text-white shadow-xl flex flex-col self-start
+                   text-white shadow-xl flex flex-col self-start md:flex-1
                    min-h-[260px]"
       >
         {/* --- декор только для карточки 8 --- */}
@@ -144,10 +144,10 @@ export default function Programma() {
   };
 
   return (
-    <section /*className="w-full p-6 md:p-10 bg-gradient-to-b from-[#041334] to-[#02081a] rounded-3xl border border-white/10"*/>
+    <section /*className="w-full p-6 md:p-10 bg-gradient-to-b from-[#041334] to-[#02081a] rounded-3xl border border-white/10"*/ className="w-full px-2 sm:px-4">
       <h2 id="program" className="text-3xl font-bold text-white mb-10 scroll-mt-20">Программа курса</h2>
 
-      <div className="flex flex-wrap justify-center gap-6">
+      <div className="flex flex-wrap justify-center gap-5 sm:gap-6 max-w-6xl mx-auto">
         {data.map((item) => renderCard(item))}
       </div>
     </section>
