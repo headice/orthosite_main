@@ -29,7 +29,7 @@ export const Home = () => {
   const closeModal = () => setModalOpen(false);
 
   return (
-    <div className="min-h-screen bg-[#030b1f] text-white scroll-smooth ">
+    <div className="min-h-screen bg-[#030b1f] text-white scroll-smooth overflow-x-hidden">
       {/* Hero */}
       <Hero onBuyTicket={openModal} />
 
@@ -43,7 +43,7 @@ export const Home = () => {
           backgroundImage: `url(${bgImage})`,
         }}
       >
-        <main className="mx-auto flex w-full max-w-6xl flex-col gap-20 px-4 py-16">
+        <main className="mx-auto flex w-full max-w-7xl flex-col gap-20 px-4 py-16">
           {/* Кому будет полезен интенсив */}
              <Intensiv></Intensiv>
           {/* Программа */}
