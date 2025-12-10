@@ -1,4 +1,19 @@
-const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:8000";
+const defaultApiBase = (() => {
+  if (typeof window !== "undefined") {
+    const { origin, port } = window.location;
+
+    // Если фронтенд уже обслуживается бекендом (например, продакшн-сборка),
+    // берём тот же origin, чтобы не ходить на 0.0.0.0/localhost вручную.
+    if (port && port !== "3000") {
+      return origin;
+    }
+  }
+
+  // Локальная разработка CRA → бекенд на 8000.
+  return "http://localhost:8000";
+})();
+
+const API_BASE = process.env.REACT_APP_API_BASE || defaultApiBase;
 
 async function handleResponse(response) {
   const text = await response.text();
