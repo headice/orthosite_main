@@ -1,13 +1,18 @@
 from datetime import date, datetime
+from pathlib import Path
 import os
 from typing import Optional
 from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException, status
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field, HttpUrl
 from yookassa import Configuration, Payment
 
 app = FastAPI(title="Ticket payments")
+
+BASE_DIR = Path(__file__).resolve().parent
+FRONT_PAGE = (BASE_DIR / "templates" / "index.html").read_text(encoding="utf-8")
 
 
 class PriceWindow(BaseModel):
@@ -87,6 +92,12 @@ def _configure_yookassa() -> None:
 def get_price() -> PriceResponse:
     """Возвращает актуальную стоимость билета с учетом календаря."""
     return resolve_price()
+
+
+@app.get("/", response_class=HTMLResponse)
+def landing_page() -> HTMLResponse:
+    """Простая HTML-страница для проверки API и запуска платежа из браузера."""
+    return HTMLResponse(content=FRONT_PAGE)
 
 
 @app.post("/payments", response_model=CreatePaymentResponse, status_code=status.HTTP_201_CREATED)
