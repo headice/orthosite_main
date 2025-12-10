@@ -5,11 +5,20 @@ from typing import Optional
 from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field, HttpUrl
 from yookassa import Configuration, Payment
 
 app = FastAPI(title="Ticket payments")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 BASE_DIR = Path(__file__).resolve().parent
 FRONT_PAGE = (BASE_DIR / "templates" / "index.html").read_text(encoding="utf-8")

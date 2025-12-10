@@ -1,8 +1,25 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { fetchCurrentPrice, formatWindow } from "../api";
 import { TicketModal } from "./TicketModal";
 
 export const Tarif = () => {
   const [isModalOpen, setModalOpen] = useState(false);
+  const [price, setPrice] = useState(null);
+  const [priceWindow, setPriceWindow] = useState(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const { amount_rub, window } = await fetchCurrentPrice();
+        setPrice(amount_rub);
+        setPriceWindow(window);
+      } catch (err) {
+        setError(err.message || "Не удалось загрузить цену");
+      }
+    };
+    load();
+  }, []);
 
   const openModal = () => setModalOpen(true);
   const closeModal = () => setModalOpen(false);
@@ -31,7 +48,9 @@ export const Tarif = () => {
 
       {/* === КАРТОЧКА ТАРИФА === */}
       <div className="w-full max-w-md rounded-[32px] border border-white/20 shadow-white/10 bg-gradient-to-br from-[#122C58] via-[#1D478F] to-[#122C58] p-8 text-white shadow-lg">
-        <p className="text-center text-xl mb-3 opacity-80">С 05.12 по 19.12</p>
+        <p className="text-center text-xl mb-3 opacity-80">
+          {priceWindow ? `Период: ${formatWindow(priceWindow)}` : "Актуальная цена"}
+        </p>
 
         <h3 className="text-center text-2xl md:text-3xl font-bold mb-6">
           БИЛЕТ НА ИНТЕНСИВ
@@ -52,10 +71,8 @@ export const Tarif = () => {
         </ul>
 
         <div className="text-center mb-6">
-          <p className="text-xl line-through opacity-50 text-orangeff7b00">
-            29900₽
-          </p>
-          <p className="text-3xl font-bold mt-1">25990₽</p>
+          <p className="text-3xl font-bold mt-1">{price ? `${price}₽` : "—"}</p>
+          {error && <p className="text-sm text-red-300 mt-2">{error}</p>}
         </div>
 
         <button

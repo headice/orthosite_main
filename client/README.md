@@ -1,3 +1,26 @@
+# Клиент для оплаты билетов через бекенд FastAPI
+
+Фронтенд создан на Create React App и обращается к бекенду из каталога `server`.
+
+## Быстрый запуск
+
+1. Поднимите бекенд (см. `server/README.md`). По умолчанию он слушает `http://localhost:8000`.
+2. Установите зависимости и стартуйте фронтенд:
+   ```bash
+   cd client
+   npm install
+   npm start
+   ```
+3. При необходимости задайте другой адрес бекенда через переменную окружения CRA:
+   ```bash
+   REACT_APP_API_BASE="https://your-backend.example.com" npm start
+   ```
+
+## Что умеет страница
+- Показывает актуальную цену с учетом календарных окон бекенда (`/price`).
+- При нажатии «Купить билет» создает платеж через `/payments` и открывает ссылку подтверждения ЮKassa в новой вкладке.
+- Отображает ошибки (например, если бекенд возвращает 500 из-за отсутствия ключей ЮKassa).
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
