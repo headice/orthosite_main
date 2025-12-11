@@ -24,7 +24,7 @@ export const TicketModal = ({ open, onClose }) => {
   const requireApiBase = () => {
     if (!apiBaseUrl) {
       throw new Error(
-        "Бэкенд не настроен. Добавьте REACT_APP_API_BASE_URL в .env и перезапустите сборку."
+        "Бэкенд не настроен. Добавьте строку REACT_APP_API_BASE_URL=http://localhost:8000 в client/.env и перезапустите `npm start` или пересоберите фронтенд."
       );
     }
   };
