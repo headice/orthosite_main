@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link} from 'react-router-dom';
+import { Link } from "react-router-dom";
 
 const emptyForm = {
   name: "",
@@ -11,6 +11,15 @@ const emptyForm = {
 
 export const TicketModal = ({ open, onClose }) => {
   const [form, setForm] = useState(emptyForm);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [priceRub, setPriceRub] = useState(null);
+  const [isPriceLoading, setPriceLoading] = useState(false);
+
+  const apiBaseUrl = useMemo(
+    () => process.env.REACT_APP_API_BASE_URL?.replace(/\/$/, "") || "",
+    []
+  );
 
   const handleChange = (event) => {
     const { name, value, type, checked } = event.target;
@@ -23,14 +32,73 @@ export const TicketModal = ({ open, onClose }) => {
 
   const resetAndClose = () => {
     setForm(emptyForm);
+    setError("");
     onClose();
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    // логика отправки
-    resetAndClose();
+    setError("");
+
+    if (!form.consent) {
+      setError("Нужно подтвердить согласие на обработку данных");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch(`${apiBaseUrl}/payments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          description: `Билет: ${form.name} (${form.email})`,
+          return_url: window.location.origin,
+        }),
+      });
+
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        const detail = body?.detail || "Не удалось создать платеж";
+        throw new Error(typeof detail === "string" ? detail : JSON.stringify(detail));
+      }
+
+      const payment = await response.json();
+      if (payment.confirmation_url) {
+        window.location.href = payment.confirmation_url;
+        return;
+      }
+
+      setError("Ссылка на оплату не получена. Попробуйте позже.");
+    } catch (submitError) {
+      setError(submitError.message || "Ошибка при создании платежа");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  useEffect(() => {
+    if (!open) return;
+
+    const fetchPrice = async () => {
+      setPriceLoading(true);
+      setError("");
+      try {
+        const response = await fetch(`${apiBaseUrl}/price`);
+        if (!response.ok) {
+          throw new Error("Не удалось получить цену");
+        }
+        const data = await response.json();
+        setPriceRub(data.amount_rub);
+      } catch (priceError) {
+        setError(priceError.message || "Ошибка загрузки цены");
+      } finally {
+        setPriceLoading(false);
+      }
+    };
+
+    fetchPrice();
+  }, [apiBaseUrl, open]);
 
   return (
     <AnimatePresence>
@@ -66,6 +134,12 @@ export const TicketModal = ({ open, onClose }) => {
               При невозможности присутствия его можно передать другому участнику (по согласованию с
               организаторами).
             </p>
+
+            <div className="mt-6 rounded-2xl bg-white/5 px-4 py-3 text-center text-lg font-semibold text-blue-100">
+              {isPriceLoading && "Загрузка цены..."}
+              {!isPriceLoading && priceRub && `Стоимость: ${priceRub} ₽`}
+              {!isPriceLoading && priceRub === null && "Цена недоступна"}
+            </div>
 
             <form className="mt-8 flex flex-col gap-4" onSubmit={handleSubmit}>
               <label className="text-sm uppercase tracking-wide text-blue-200">
@@ -123,12 +197,18 @@ export const TicketModal = ({ open, onClose }) => {
                   </Link>
                 </span>
               </label>
+              {error && (
+                <div className="rounded-xl bg-red-500/20 px-4 py-3 text-sm text-red-200">
+                  {error}
+                </div>
+              )}
 
               <button
                 type="submit"
-                className="mt-4 w-full rounded-2xl bg-gradient-to-r from-blue-400 to-blue-600 py-4 text-lg font-semibold text-white transition hover:brightness-110"
+                disabled={isSubmitting}
+                className="mt-4 w-full rounded-2xl bg-gradient-to-r from-blue-400 to-blue-600 py-4 text-lg font-semibold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
               >
-                Купить билет
+                {isSubmitting ? "Создаем платеж..." : "Купить билет"}
               </button>
             </form>
           </motion.div>

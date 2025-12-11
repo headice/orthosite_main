@@ -38,6 +38,11 @@
   export YOOKASSA_SECRET_KEY=your_secret_key
   ```
 
+### Диагностика «invalid_credentials»
+Если при создании платежа сервер отвечает 502 с текстом про неверные данные авторизации, 
+это означает, что в `.env` указан неверный `YOOKASSA_SECRET_KEY` или `YOOKASSA_SHOP_ID`. 
+Убедитесь, что копируете **секретный ключ из кабинета** (а не публичный) и перезапустите сервер после правки `.env`.
+
 ## Запуск сервера
 1. Находясь в `backend`, запустите uvicorn:
    ```bash
@@ -67,3 +72,7 @@ curl -X POST http://127.0.0.1:8000/payments \
   -H "Content-Type: application/json" \
   -d '{"description": "Билет на интенсив", "return_url": "https://example.com/payment/success"}'
 ```
+
+## Интеграция фронтенда
+- В клиенте можно указать адрес API через переменную окружения CRA: `REACT_APP_API_BASE_URL=http://localhost:8000`.
+- После биллинга бекенд возвращает `confirmation_url` — фронтенд должен перенаправлять пользователя на эту ссылку для оплаты.

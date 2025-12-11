@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime
+import logging
 from pathlib import Path
 import os
 from typing import Optional
@@ -12,7 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field, HttpUrl
 from yookassa import Configuration, Payment
-from yookassa.domain.exceptions import ApiError
+from yookassa.domain.exceptions import ApiError, UnauthorizedError
 
 # === БАЗОВЫЕ НАСТРОЙКИ И ОКРУЖЕНИЕ ===
 
@@ -20,8 +21,11 @@ BASE_DIR = Path(__file__).resolve().parent
 ENV_PATH = BASE_DIR / ".env"
 load_dotenv(ENV_PATH)
 
-print(f"BACKEND STARTED FROM: {BASE_DIR}")
-print(f".env path: {ENV_PATH}  exists={ENV_PATH.exists()}")
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+logger.info("BACKEND STARTED FROM: %s", BASE_DIR)
+logger.info(".env path: %s  exists=%s", ENV_PATH, ENV_PATH.exists())
 
 app = FastAPI(title="Ticket payments")
 
@@ -114,7 +118,9 @@ def _configure_yookassa() -> None:
     account_id = os.getenv("YOOKASSA_SHOP_ID")
     secret_key = os.getenv("YOOKASSA_SECRET_KEY")
 
-    print("CONFIG YOOKASSA: SHOP_ID =", account_id, "SECRET_KEY_SET =", bool(secret_key))
+    logger.info(
+        "CONFIG YOOKASSA: SHOP_ID = %s SECRET_KEY_SET = %s", account_id, bool(secret_key)
+    )
 
     if not account_id or not secret_key:
         raise HTTPException(
@@ -230,16 +236,26 @@ def create_payment(request: CreatePaymentRequest) -> CreatePaymentResponse:
             str(uuid4()),
         )
 
+    except UnauthorizedError as exc:
+        logger.error("YOOKASSA unauthorized: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=(
+                "Yookassa отклонила запрос: проверь YOOKASSA_SHOP_ID и "
+                "YOOKASSA_SECRET_KEY в .env"
+            ),
+        ) from exc
+
     except ApiError as exc:
-        # Это ошибка именно от ЮKassa → печатаем подробности в консоль
-        print("=== YOOKASSA API ERROR ===")
-        print("Type:", type(exc))
-        print("Message:", str(exc))
+        # Это ошибка именно от ЮKassa → печатаем подробности в лог
+        logger.error("=== YOOKASSA API ERROR ===")
+        logger.error("Type: %s", type(exc))
+        logger.error("Message: %s", exc)
         # У разных версий SDK поля могут отличаться, поэтому аккуратно:
         for attr in ("code", "description", "params", "errors"):
             if hasattr(exc, attr):
-                print(f"{attr} =", getattr(exc, attr))
-        print("=== END YOOKASSA API ERROR ===")
+                logger.error("%s = %s", attr, getattr(exc, attr))
+        logger.error("=== END YOOKASSA API ERROR ===")
 
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
@@ -248,7 +264,7 @@ def create_payment(request: CreatePaymentRequest) -> CreatePaymentResponse:
 
     except Exception as exc:  # pylint: disable=broad-except
         # Любая другая неожиданная ошибка
-        print("UNEXPECTED ERROR WHILE CREATING PAYMENT:", repr(exc))
+        logger.exception("UNEXPECTED ERROR WHILE CREATING PAYMENT")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Неожиданная ошибка при обращении к Yookassa",
