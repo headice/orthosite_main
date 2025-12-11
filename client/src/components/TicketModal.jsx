@@ -21,6 +21,23 @@ export const TicketModal = ({ open, onClose }) => {
     []
   );
 
+  const requireApiBase = () => {
+    if (!apiBaseUrl) {
+      throw new Error(
+        "Бэкенд не настроен. Добавьте REACT_APP_API_BASE_URL в .env и перезапустите сборку."
+      );
+    }
+  };
+
+  const readJsonSafe = async (response) => {
+    const contentType = response.headers.get("content-type") || "";
+    if (contentType.includes("application/json")) {
+      return response.json();
+    }
+    const text = await response.text();
+    throw new Error(text?.slice(0, 300) || "Сервер вернул неверный ответ");
+  };
+
   const handleChange = (event) => {
     const { name, value, type, checked } = event.target;
 
@@ -48,6 +65,14 @@ export const TicketModal = ({ open, onClose }) => {
     setIsSubmitting(true);
 
     try {
+      requireApiBase();
+    } catch (missingBackendError) {
+      setError(missingBackendError.message);
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
       const response = await fetch(`${apiBaseUrl}/payments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -58,12 +83,18 @@ export const TicketModal = ({ open, onClose }) => {
       });
 
       if (!response.ok) {
-        const body = await response.json().catch(() => ({}));
-        const detail = body?.detail || "Не удалось создать платеж";
-        throw new Error(typeof detail === "string" ? detail : JSON.stringify(detail));
+        const body = await readJsonSafe(response).catch((err) => err);
+        const detail = body?.detail || body?.message || body;
+        const message =
+          typeof detail === "string"
+            ? detail
+            : detail
+            ? JSON.stringify(detail)
+            : "Не удалось создать платеж";
+        throw new Error(message);
       }
 
-      const payment = await response.json();
+      const payment = await readJsonSafe(response);
       if (payment.confirmation_url) {
         window.location.href = payment.confirmation_url;
         return;
@@ -84,11 +115,18 @@ export const TicketModal = ({ open, onClose }) => {
       setPriceLoading(true);
       setError("");
       try {
+        requireApiBase();
+
         const response = await fetch(`${apiBaseUrl}/price`);
         if (!response.ok) {
-          throw new Error("Не удалось получить цену");
+          const message = await readJsonSafe(response).catch(
+            () => "Не удалось получить цену"
+          );
+          throw new Error(
+            typeof message === "string" ? message : "Не удалось получить цену"
+          );
         }
-        const data = await response.json();
+        const data = await readJsonSafe(response);
         setPriceRub(data.amount_rub);
       } catch (priceError) {
         setError(priceError.message || "Ошибка загрузки цены");
