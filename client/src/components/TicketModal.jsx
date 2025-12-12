@@ -203,7 +203,7 @@ export const TicketModal = ({ open, onClose }) => {
           transition={{ duration: 0.2 }}
         >
           <motion.div
-            className="relative w-full max-w-xl rounded-[32px] border border-white/10 bg-gradient-to-b from-[#123870] to-[#06183c] p-6 shadow-2xl sm:p-8 max-h-[min(90vh,720px)] overflow-y-auto md:max-h-[90vh] md:overflow-y-auto"
+            className="relative w-full max-w-xl rounded-[32px] border border-white/10 bg-gradient-to-b from-[#123870] to-[#06183c] p-6 shadow-2xl sm:p-8 max-h-[90vh] overflow-y-auto md:max-h-none md:overflow-visible"
             initial={{ opacity: 0, scale: 0.9, y: 20 }}   // стартовое состояние окна
             animate={{ opacity: 1, scale: 1, y: 0 }}      // финальное состояние
             exit={{ opacity: 0, scale: 0.9, y: 20 }}      // анимация закрытия
