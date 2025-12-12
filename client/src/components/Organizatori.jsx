@@ -26,15 +26,21 @@ export const Organizatori = () => {
             className="w-32 h-32 object-cover rounded-xl"
           />
           <div>
-            <h3 className="text-lg sm:text-xl font-bold leading-tight max-[422px]:text-base max-[422px]:leading-tight">
+            <h3
+              className="text-lg sm:text-xl font-bold leading-tight max-[422px]:text-base max-[380px]:text-sm max-[350px]:text-[13px] max-[330px]:text-[12px]"
+            >
               Михайдарова<br />
               Наталья
               Владимировна
             </h3>
-            <p className="text-blue-100 text-sm sm:text-base leading-snug mt-1 max-[422px]:text-xs max-[422px]:leading-snug">
+            <p
+              className="text-blue-100 text-sm sm:text-base leading-snug mt-1 max-[422px]:text-xs max-[380px]:text-[11px] max-[330px]:text-[10px]"
+            >
               Основатель центра «Вектор Здоровья»
             </p>
-            <p className="text-blue-200 text-sm sm:text-base leading-snug mt-0.5 max-[422px]:text-xs max-[422px]:leading-snug">
+            <p
+              className="text-blue-200 text-sm sm:text-base leading-snug mt-0.5 max-[422px]:text-xs max-[380px]:text-[11px] max-[330px]:text-[10px]"
+            >
               г. Артем
             </p>
           </div>
