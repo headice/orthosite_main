@@ -221,7 +221,7 @@ export const TicketModal = ({ open, onClose }) => {
             <p className="mt-4 text-center text-sm text-blue-100 sm:text-base">
               Оплата участия дает право на посещение 2-х дневного интенсива 
             </p>
-            <p className="text-center text-sm text-blue-100 sm:text-base">29-30.01.2026.</p>
+            <p className="text-center text-sm text-blue-100 sm:text-base">29.01-30.01.2026.</p>
             <p className="mt-3 text-center text-xs text-blue-200 sm:text-sm">
               Регистрация и выдача бейджа участника — при входе на площадку Зал «Ярославль». Билет невозвратный.
               При невозможности присутствия его можно передать другому участнику (по согласованию с
