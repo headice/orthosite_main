@@ -47,36 +47,43 @@ export const TicketModal = ({ open, onClose }) => {
   };
 
   // ---- ВАЛИДАЦИЯ ----
+  const validateField = (name, value) => {
+    switch (name) {
+      case "name": {
+        if (!value.trim()) return "Введите ФИО";
+        if (!/^[a-zA-Zа-яА-ЯёЁ\s-]{3,}$/u.test(value.trim())) {
+          return "ФИО должно содержать только буквы, пробелы и дефисы и быть не короче 3 символов";
+        }
+        return "";
+      }
+      case "email": {
+        if (!value.trim()) return "Введите email";
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())) {
+          return "Некорректный формат email";
+        }
+        return "";
+      }
+      case "phone": {
+        const digits = value.replace(/\D/g, "");
+        if (!value.trim()) return "Введите телефон";
+        if (digits.length < 10) return "Укажите полный номер телефона (не менее 10 цифр)";
+        return "";
+      }
+      case "consent": {
+        return value ? "" : "Необходимо согласие на обработку данных";
+      }
+      default:
+        return "";
+    }
+  };
+
   const validateForm = (values) => {
-    const errors = { ...emptyErrors };
-
-    // ФИО: минимум 3 символа, только буквы, пробелы и дефис
-    if (!values.name.trim()) {
-      errors.name = "Введите ФИО";
-    } else if (!/^[a-zA-Zа-яА-ЯёЁ\s-]{3,}$/u.test(values.name.trim())) {
-      errors.name =
-        "ФИО должно содержать только буквы, пробелы и дефисы и быть не короче 3 символов";
-    }
-
-    // Email: простая проверка формата
-    if (!values.email.trim()) {
-      errors.email = "Введите email";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) {
-      errors.email = "Некорректный формат email";
-    }
-
-    // Телефон: минимум 10 цифр
-    const digits = values.phone.replace(/\D/g, "");
-    if (!values.phone.trim()) {
-      errors.phone = "Введите телефон";
-    } else if (digits.length < 10) {
-      errors.phone = "Укажите полный номер телефона (не менее 10 цифр)";
-    }
-
-    // Согласие
-    if (!values.consent) {
-      errors.consent = "Необходимо согласие на обработку данных";
-    }
+    const errors = {
+      name: validateField("name", values.name),
+      email: validateField("email", values.email),
+      phone: validateField("phone", values.phone),
+      consent: validateField("consent", values.consent),
+    };
 
     const isValid = !errors.name && !errors.email && !errors.phone && !errors.consent;
     return { isValid, errors };
@@ -84,16 +91,25 @@ export const TicketModal = ({ open, onClose }) => {
 
   const handleChange = (event) => {
     const { name, value, type, checked } = event.target;
+    const nextValue = type === "checkbox" ? checked : value;
+    const nextForm = { ...form, [name]: nextValue };
 
-    setForm((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+    setForm(nextForm);
 
-    // очищаем ошибку конкретного поля при вводе
+    // живая валидация поля при вводе
     setFieldErrors((prev) => ({
       ...prev,
-      [name]: "",
+      [name]: validateField(name, nextValue),
+    }));
+  };
+
+  const handleBlur = (event) => {
+    const { name, value, type, checked } = event.target;
+    const fieldValue = type === "checkbox" ? checked : value;
+
+    setFieldErrors((prev) => ({
+      ...prev,
+      [name]: validateField(name, fieldValue),
     }));
   };
 
@@ -203,7 +219,7 @@ export const TicketModal = ({ open, onClose }) => {
           transition={{ duration: 0.2 }}
         >
           <motion.div
-            className="relative w-full max-w-xl md:max-w-lg lg:max-w-xl rounded-[32px] border border-white/10 bg-gradient-to-b from-[#123870] to-[#06183c] p-6 sm:p-7 md:p-6 shadow-2xl max-h-[90vh] overflow-y-auto md:max-h-none md:overflow-visible md:scale-[0.95] lg:scale-[0.9]"
+          className="relative w-full max-w-lg md:max-w-md lg:max-w-lg rounded-[32px] border border-white/10 bg-gradient-to-b from-[#123870] to-[#06183c] p-6 sm:p-7 md:p-5 shadow-2xl max-h-[90vh] overflow-y-auto md:max-h-none md:overflow-visible md:scale-[0.9] lg:scale-[0.85]"
             initial={{ opacity: 0, scale: 0.9, y: 20 }}   // стартовое состояние окна
             animate={{ opacity: 1, scale: 1, y: 0 }}      // финальное состояние
             exit={{ opacity: 0, scale: 0.9, y: 20 }}      // анимация закрытия
@@ -241,6 +257,8 @@ export const TicketModal = ({ open, onClose }) => {
                   name="name"
                   value={form.name}
                   onChange={handleChange}
+                  onBlur={handleBlur}
+                  required
                   className={`mt-2 w-full rounded-2xl border bg-white/5 px-4 py-3 text-base text-white placeholder:text-blue-200/70 focus:outline-none ${
                     fieldErrors.name
                       ? "border-red-400 focus:border-red-400"
@@ -260,6 +278,8 @@ export const TicketModal = ({ open, onClose }) => {
                   name="email"
                   value={form.email}
                   onChange={handleChange}
+                  onBlur={handleBlur}
+                  required
                   className={`mt-2 w-full rounded-2xl border bg-white/5 px-4 py-3 text-base text-white placeholder:text-blue-200/70 focus:outline-none ${
                     fieldErrors.email
                       ? "border-red-400 focus:border-red-400"
@@ -279,6 +299,8 @@ export const TicketModal = ({ open, onClose }) => {
                   name="phone"
                   value={form.phone}
                   onChange={handleChange}
+                  onBlur={handleBlur}
+                  required
                   className={`mt-2 w-full rounded-2xl border bg-white/5 px-4 py-3 text-base text-white placeholder:text-blue-200/70 focus:outline-none ${
                     fieldErrors.phone
                       ? "border-red-400 focus:border-red-400"
@@ -297,6 +319,8 @@ export const TicketModal = ({ open, onClose }) => {
                   name="consent"
                   checked={form.consent}
                   onChange={handleChange}
+                  onBlur={handleBlur}
+                  required
                   className={`mt-1 h-5 w-5 rounded border bg-transparent text-blue-500 focus:ring-blue-300 ${
                     fieldErrors.consent ? "border-red-400" : "border-white/30"
                   }`}
