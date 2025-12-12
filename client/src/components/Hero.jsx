@@ -145,7 +145,7 @@ export const Hero = ({ onBuyTicket }) => {
             </h1>
 
             <p className="mt-6 max-w-lg text-lg text-blue-100">
-             Форум, где создается будущее современной медицины. Ортопедия: от диагностики до коррекции.
+             Практическая ортопедия для подологов, шагаем в ногу со временем.
             </p>
 
             <div className="mt-6 flex flex-wrap gap-6 text-sm text-blue-100">
