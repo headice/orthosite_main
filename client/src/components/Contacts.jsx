@@ -19,8 +19,8 @@ export const Contacts = () => {
 
             <p className="text-blue-100 font-semibold text-sm md:text-xs lg:text-base">Контакты:</p>
             <p className="mb-4">
-              <a href="tel:+79644462449" className="text-blue-100 hover:text-white transition-colors text-sm md:text-xs lg:text-base">
-                +7 964 446-24-49
+              <a href="tel:+79644452449" className="text-blue-100 hover:text-white transition-colors text-sm md:text-xs lg:text-base">
+                +79644452449
               </a>
             </p>
             <p className="text-blue-100 font-semibold text-sm md:text-xs lg:text-base">Задать вопрос:</p>
