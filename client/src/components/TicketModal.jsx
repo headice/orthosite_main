@@ -196,14 +196,14 @@ export const TicketModal = ({ open, onClose }) => {
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/70 px-4 py-6"
+          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/70 px-4 py-6 md:overflow-visible"
           initial={{ opacity: 0 }}          // как появляется фон
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}             // как исчезает фон
           transition={{ duration: 0.2 }}
         >
           <motion.div
-            className="relative w-full max-w-xl rounded-[32px] border border-white/10 bg-gradient-to-b from-[#123870] to-[#06183c] p-6 shadow-2xl sm:p-8 max-h-[min(90vh,720px)] overflow-y-auto"
+            className="relative w-full max-w-xl rounded-[32px] border border-white/10 bg-gradient-to-b from-[#123870] to-[#06183c] p-6 shadow-2xl sm:p-8 max-h-[min(90vh,720px)] overflow-y-auto md:max-h-none md:overflow-visible"
             initial={{ opacity: 0, scale: 0.9, y: 20 }}   // стартовое состояние окна
             animate={{ opacity: 1, scale: 1, y: 0 }}      // финальное состояние
             exit={{ opacity: 0, scale: 0.9, y: 20 }}      // анимация закрытия
