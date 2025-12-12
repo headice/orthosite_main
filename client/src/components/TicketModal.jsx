@@ -196,14 +196,14 @@ export const TicketModal = ({ open, onClose }) => {
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/70 px-4 py-6"
+          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/70 px-4 py-6 md:overflow-visible"
           initial={{ opacity: 0 }}          // как появляется фон
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}             // как исчезает фон
           transition={{ duration: 0.2 }}
         >
           <motion.div
-            className="relative w-full max-w-xl rounded-[32px] border border-white/10 bg-gradient-to-b from-[#123870] to-[#06183c] p-6 shadow-2xl sm:p-8 max-h-[min(90vh,720px)] overflow-y-auto"
+            className="relative w-full max-w-xl rounded-[32px] border border-white/10 bg-gradient-to-b from-[#123870] to-[#06183c] p-6 shadow-2xl sm:p-8 max-h-[min(90vh,720px)] overflow-y-auto md:max-h-none md:overflow-visible"
             initial={{ opacity: 0, scale: 0.9, y: 20 }}   // стартовое состояние окна
             animate={{ opacity: 1, scale: 1, y: 0 }}      // финальное состояние
             exit={{ opacity: 0, scale: 0.9, y: 20 }}      // анимация закрытия
@@ -219,10 +219,7 @@ export const TicketModal = ({ open, onClose }) => {
 
             <h2 className="text-center text-2xl font-semibold sm:text-3xl">Оплата на участие</h2>
             <p className="mt-4 text-center text-sm text-blue-100 sm:text-base">
-              Оплата участия дает право на посещение 2-х дневного интенсива 
-            </p>
-            <p className="sm:mt-4 text-center text-sm text-blue-100 sm:text-base">
-              29.01-30.01.2026.
+              Оплата участия дает право на посещение 2-х дневного интенсива 29-30.01.2026.
             </p>
             <p className="mt-3 text-center text-xs text-blue-200 sm:text-sm">
               Регистрация и выдача бейджа участника — при входе на площадку Зал «Ярославль». Билет невозвратный.
