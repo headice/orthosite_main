@@ -1,0 +1,37 @@
+# =======================
+# BACKEND (Python)
+# =======================
+backend/.venv/
+backend/venv/
+backend/env/
+
+backend/__pycache__/
+backend/**/*.pyc
+backend/**/*.pyo
+
+
+
+
+# =======================
+# FRONTEND (Node / React)
+# =======================
+client/node_modules/
+
+
+
+client/.next/
+client/build/
+client/dist/
+
+client/npm-debug.log*
+client/yarn-debug.log*
+client/yarn-error.log*
+client/pnpm-debug.log*
+
+
+# =======================
+# IDE / SYSTEM
+# =======================
+.vscode/
+.DS_Store
+Thumbs.db
