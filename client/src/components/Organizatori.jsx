@@ -26,15 +26,17 @@ export const Organizatori = () => {
             className="w-32 h-32 object-cover rounded-xl"
           />
           <div>
-            <h3 className="text-xl font-bold">
+            <h3 className="text-lg sm:text-xl font-bold leading-tight">
               Михайдарова<br />
               Наталья
               Владимировна
             </h3>
-            <p className="text-blue-100 text-2lg mt-1">
+            <p className="text-blue-100 text-sm sm:text-base leading-snug mt-1">
               Основатель центра «Вектор Здоровья»
             </p>
-            <p className="text-blue-200 text-2lg">г. Артем</p>
+            <p className="text-blue-200 text-sm sm:text-base leading-snug mt-0.5">
+              г. Артем
+            </p>
           </div>
         </div>
 
