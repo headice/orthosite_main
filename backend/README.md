@@ -22,15 +22,21 @@
    ```
 
 ## Переменные окружения
-Бэкенду нужны две переменные:
+Бэкенду нужны переменные:
 - `YOOKASSA_SHOP_ID`
 - `YOOKASSA_SECRET_KEY`
+- `PAYMENTS_API_KEY` — обязательный ключ для защищенного вызова `/payments`
+- `CORS_ALLOWED_ORIGINS` — список доменов через запятую для разрешённых запросов из браузера
+- `DEBUG_TOOLS_ENABLED` — `true/false`, включает эндпоинт `/debug-env` только в нужных окружениях
 
 Их можно задать:
 - через файл `.env` в директории `backend` (пример):
   ```env
   YOOKASSA_SHOP_ID=your_shop_id
   YOOKASSA_SECRET_KEY=your_secret_key
+  PAYMENTS_API_KEY=super-secret
+  CORS_ALLOWED_ORIGINS=https://yourdomain.com,https://admin.yourdomain.com
+  DEBUG_TOOLS_ENABLED=false
   ```
 - или через переменные окружения текущей сессии:
   ```bash
@@ -66,11 +72,12 @@ curl http://127.0.0.1:8000/health
 curl http://127.0.0.1:8000/price
 ```
 
-Для создания платежа (подставьте свой `return_url`):
+Для создания платежа (подставьте свой `return_url` и API-ключ):
 ```bash
 curl -X POST http://127.0.0.1:8000/payments \
   -H "Content-Type: application/json" \
-  -d '{"description": "Билет на интенсив", "return_url": "https://example.com/payment/success"}'
+  -H "X-API-Key: $PAYMENTS_API_KEY" \
+  -d '{"description": "Билет на интенсив", "return_url": "https://example.com/payment/success", "customer_email": "user@example.com"}'
 ```
 
 ## Интеграция фронтенда

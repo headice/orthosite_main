@@ -8,10 +8,10 @@ from typing import Optional
 from uuid import uuid4
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, Header, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import BaseModel, EmailStr, Field, HttpUrl
 from yookassa import Configuration, Payment
 from yookassa.domain.exceptions import ApiError, UnauthorizedError
 
@@ -27,15 +27,35 @@ logger = logging.getLogger(__name__)
 logger.info("BACKEND STARTED FROM: %s", BASE_DIR)
 logger.info(".env path: %s  exists=%s", ENV_PATH, ENV_PATH.exists())
 
+DEBUG_TOOLS_ENABLED = os.getenv("DEBUG_TOOLS_ENABLED", "false").lower() in {
+    "1",
+    "true",
+    "yes",
+}
+
 app = FastAPI(title="Ticket payments")
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+def _get_allowed_origins() -> list[str]:
+    raw = os.getenv("CORS_ALLOWED_ORIGINS", "")
+    return [origin.strip() for origin in raw.split(",") if origin.strip()]
+
+
+ALLOWED_ORIGINS = _get_allowed_origins()
+
+if ALLOWED_ORIGINS:
+    logger.info("CORS enabled for origins: %s", ALLOWED_ORIGINS)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=ALLOWED_ORIGINS,
+        allow_credentials=True,
+        allow_methods=["GET", "POST"],
+        allow_headers=["Authorization", "Content-Type", "X-API-Key"],
+    )
+else:
+    logger.warning(
+        "CORS_ALLOWED_ORIGINS is empty: CORS middleware is not configured and "
+        "browser access will be blocked"
+    )
 
 # Если index.html реально нужен — раскомментируй и создай файл.
 # FRONT_PAGE = (BASE_DIR / "templates" / "index.html").read_text(encoding="utf-8")
@@ -65,6 +85,10 @@ class CreatePaymentRequest(BaseModel):
         ...,
         example="https://example.com/payment/success",
         description="Куда вернуть клиента после оплаты",
+    )
+    customer_email: Optional[EmailStr] = Field(
+        None,
+        description=("Email плательщика для чека. Необязателен, но должен быть валиден"),
     )
 
 
@@ -135,6 +159,22 @@ def _configure_yookassa() -> None:
     Configuration.secret_key = secret_key
 
 
+def _require_api_key(x_api_key: str = Header(..., alias="X-API-Key")) -> None:
+    expected = os.getenv("PAYMENTS_API_KEY")
+    if not expected:
+        logger.error("PAYMENTS_API_KEY is not configured")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Платежный API временно недоступен",
+        )
+    if x_api_key != expected:
+        logger.warning("Invalid API key attempt")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Неавторизованный запрос",
+        )
+
+
 def _extract_confirmation_url(confirmation: object) -> Optional[str]:
     """Безопасно извлекает ссылку на подтверждение из ответа Yookassa."""
 
@@ -161,6 +201,8 @@ def healthcheck() -> dict[str, str]:
 
 @app.get("/debug-env")
 def debug_env():
+    if not DEBUG_TOOLS_ENABLED:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
     return {
         "YOOKASSA_SHOP_ID": os.getenv("YOOKASSA_SHOP_ID"),
         "YOOKASSA_SECRET_KEY_SET": bool(os.getenv("YOOKASSA_SECRET_KEY")),
@@ -181,8 +223,12 @@ def get_price() -> PriceResponse:
 #     return HTMLResponse(content=FRONT_PAGE)
 
 
-@app.post("/payments", response_model=CreatePaymentResponse, status_code=status.HTTP_201_CREATED)
-def create_payment(request: CreatePaymentRequest) -> CreatePaymentResponse:
+@app.post(
+    "/payments", response_model=CreatePaymentResponse, status_code=status.HTTP_201_CREATED
+)
+def create_payment(
+    request: CreatePaymentRequest, _=Depends(_require_api_key)
+) -> CreatePaymentResponse:
     price = resolve_price()
     _configure_yookassa()
 
@@ -197,12 +243,12 @@ def create_payment(request: CreatePaymentRequest) -> CreatePaymentResponse:
     #   - vat_code: 1 — Без НДС, 2 — 0%, 3 — 10%, 4 — 20%, 5 — 10/110, 6 — 20/120
     #   - tax_system_code: 1–6 в зависимости от системы налогообложения.
 
+    customer_data = {"full_name": request.description[:128]}
+    if request.customer_email:
+        customer_data["email"] = request.customer_email
+
     receipt = {
-        "customer": {
-            # здесь лучше подставить реальные данные клиента
-            "full_name": request.description[:128],
-            "email": "test@example.com",
-        },
+        "customer": customer_data,
         "items": [
             {
                 "description": request.description[:128],
