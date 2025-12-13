@@ -5,6 +5,7 @@
 2. Пропишите адрес бэкенда:
    ```env
    REACT_APP_API_BASE_URL=http://localhost:8000
+   REACT_APP_PAYMENTS_API_KEY=super-secret-api-key
    ```
 3. Перезапустите фронтенд (`npm start`) или пересоберите `npm run build`, чтобы переменная попала в сборку. Без этого модальное окно оплаты покажет ошибку «Бэкенд не настроен».
 

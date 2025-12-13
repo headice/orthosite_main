@@ -29,6 +29,11 @@ export const TicketModal = ({ open, onClose }) => {
     []
   );
 
+  const paymentsApiKey = useMemo(
+    () => process.env.REACT_APP_PAYMENTS_API_KEY?.trim() || "",
+    []
+  );
+
   const requireApiBase = () => {
     if (!apiBaseUrl) {
       throw new Error(
@@ -127,9 +132,14 @@ export const TicketModal = ({ open, onClose }) => {
     }
 
     try {
+      const headers = { "Content-Type": "application/json" };
+      if (paymentsApiKey) {
+        headers["X-API-Key"] = paymentsApiKey;
+      }
+
       const response = await fetch(`${apiBaseUrl}/payments`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({
           description: `Билет: ${form.name} (${form.email})`,
           return_url: window.location.origin,

@@ -41,7 +41,16 @@ app = FastAPI(title="Ticket payments")
 
 def _get_allowed_origins() -> list[str]:
     raw = os.getenv("CORS_ALLOWED_ORIGINS", "")
-    return [origin.strip() for origin in raw.split(",") if origin.strip()]
+    origins = [origin.strip() for origin in raw.split(",") if origin.strip()]
+
+    # Если список не задан, пробуем взять origin из Render/Env, чтобы браузер мог достучаться
+    if not origins:
+        render_origin = os.getenv("RENDER_EXTERNAL_URL")
+        if render_origin:
+            origins.append(render_origin.rstrip("/"))
+            logger.info("CORS origin auto-filled from RENDER_EXTERNAL_URL=%s", render_origin)
+
+    return origins
 
 
 ALLOWED_ORIGINS = _get_allowed_origins()
