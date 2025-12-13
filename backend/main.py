@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, Header, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
-from pydantic import BaseModel, EmailStr, Field, HttpUrl, validator
+from pydantic import BaseModel, Field, HttpUrl, validator, constr
 from yookassa import Configuration, Payment
 from yookassa.domain.exceptions import ApiError, UnauthorizedError
 
@@ -112,7 +112,7 @@ class CreatePaymentRequest(BaseModel):
         example="https://example.com/payment/success",
         description="Куда вернуть клиента после оплаты",
     )
-    customer_email: Optional[EmailStr] = Field(
+    customer_email: Optional[constr(strip_whitespace=True, max_length=254)] = Field(
         None,
         description=("Email плательщика для чека. Необязателен, но должен быть валиден"),
     )
@@ -136,6 +136,16 @@ class CreatePaymentRequest(BaseModel):
         if value.host and value.host.lower() in ALLOWED_RETURN_HOSTS:
             return value
         raise ValueError("Недопустимый адрес возврата: хост не в списке разрешённых")
+
+    @validator("customer_email")
+    def validate_email(cls, value: Optional[str]) -> Optional[str]:  # noqa: D417
+        if value is None:
+            return value
+        email = value.strip()
+        # Простейшая проверка без внешней зависимости email-validator
+        if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", email):
+            raise ValueError("Некорректный email-адрес")
+        return email
 
 
 class CreatePaymentResponse(BaseModel):
