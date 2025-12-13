@@ -223,9 +223,8 @@ export const TicketModal = ({ open, onClose }) => {
             </p>
             <p className="text-center text-sm text-blue-100 sm:text-base">29.01-30.01.2026.</p>
             <p className="mt-3 text-center text-xs text-blue-200 sm:text-sm">
-              Регистрация и выдача бейджа участника — при входе на площадку Зал «Ярославль». Билет невозвратный.
-              При невозможности присутствия его можно передать другому участнику (по согласованию с
-              организаторами).
+              Регистрация и выдача бейджей участникам
+Место: вход в конференц-зал бизнес-центра отеля «Cosmos Novosibirsk».
             </p>
 
             <div className="mt-6 rounded-2xl bg-white/5 px-4 py-3 text-center text-lg font-semibold text-blue-100">
