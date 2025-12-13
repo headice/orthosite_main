@@ -16,7 +16,7 @@
    python -m venv .venv
    source .venv/bin/activate
    ```
-3. Установите зависимости:
+3. Установите зависимости (включая валидатор email-адресов):
    ```bash
    pip install -r requirements.txt
    ```
