@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from datetime import date, datetime
 import logging
+import re
+from datetime import date, datetime
 from pathlib import Path
 import os
 from typing import Optional
@@ -11,7 +12,7 @@ from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, Header, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
-from pydantic import BaseModel, EmailStr, Field, HttpUrl
+from pydantic import BaseModel, EmailStr, Field, HttpUrl, validator
 from yookassa import Configuration, Payment
 from yookassa.domain.exceptions import ApiError, UnauthorizedError
 
@@ -25,7 +26,10 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 logger.info("BACKEND STARTED FROM: %s", BASE_DIR)
-logger.info(".env path: %s  exists=%s", ENV_PATH, ENV_PATH.exists())
+if ENV_PATH.exists():
+    logger.info(".env file detected and loaded")
+else:
+    logger.info(".env file not found; relying on environment variables")
 
 DEBUG_TOOLS_ENABLED = os.getenv("DEBUG_TOOLS_ENABLED", "false").lower() in {
     "1",
@@ -41,6 +45,19 @@ def _get_allowed_origins() -> list[str]:
 
 
 ALLOWED_ORIGINS = _get_allowed_origins()
+STRICT_CORS_REQUIRED = os.getenv("REQUIRE_CORS_ORIGINS", "false").lower() in {
+    "1",
+    "true",
+    "yes",
+}
+
+
+def _get_allowed_return_hosts() -> set[str]:
+    raw = os.getenv("RETURN_URL_ALLOWED_HOSTS", "")
+    return {host.strip().lower() for host in raw.split(",") if host.strip()}
+
+
+ALLOWED_RETURN_HOSTS = _get_allowed_return_hosts()
 
 if ALLOWED_ORIGINS:
     logger.info("CORS enabled for origins: %s", ALLOWED_ORIGINS)
@@ -52,10 +69,13 @@ if ALLOWED_ORIGINS:
         allow_headers=["Authorization", "Content-Type", "X-API-Key"],
     )
 else:
-    logger.warning(
+    message = (
         "CORS_ALLOWED_ORIGINS is empty: CORS middleware is not configured and "
         "browser access will be blocked"
     )
+    if STRICT_CORS_REQUIRED:
+        raise RuntimeError(message)
+    logger.warning(message)
 
 # Если index.html реально нужен — раскомментируй и создай файл.
 # FRONT_PAGE = (BASE_DIR / "templates" / "index.html").read_text(encoding="utf-8")
@@ -80,7 +100,13 @@ class PriceResponse(BaseModel):
 
 
 class CreatePaymentRequest(BaseModel):
-    description: str = Field(..., example="Билет на интенсив")
+    description: str = Field(
+        ...,
+        example="Билет на интенсив",
+        min_length=3,
+        max_length=120,
+        description=("Описание билета. Ограничено по длине и разрешённым символам."),
+    )
     return_url: HttpUrl = Field(
         ...,
         example="https://example.com/payment/success",
@@ -90,6 +116,26 @@ class CreatePaymentRequest(BaseModel):
         None,
         description=("Email плательщика для чека. Необязателен, но должен быть валиден"),
     )
+
+    @validator("description")
+    def validate_description(cls, value: str) -> str:  # noqa: D417
+        clean_value = value.strip()
+        if "<" in clean_value or ">" in clean_value:
+            raise ValueError("Описание не должно содержать HTML-теги")
+        allowed_pattern = re.compile(r"^[\wА-Яа-яёЁ ,.!?\-()\[\]/:+#&@]+$")
+        if not allowed_pattern.match(clean_value):
+            raise ValueError(
+                "Описание содержит недопустимые символы. Допускаются буквы, цифры и базовая пунктуация"
+            )
+        return clean_value
+
+    @validator("return_url")
+    def validate_return_url(cls, value: HttpUrl) -> HttpUrl:  # noqa: D417
+        if not ALLOWED_RETURN_HOSTS:
+            return value
+        if value.host and value.host.lower() in ALLOWED_RETURN_HOSTS:
+            return value
+        raise ValueError("Недопустимый адрес возврата: хост не в списке разрешённых")
 
 
 class CreatePaymentResponse(BaseModel):
@@ -200,9 +246,18 @@ def healthcheck() -> dict[str, str]:
 
 
 @app.get("/debug-env")
-def debug_env():
+def debug_env(x_debug_token: Optional[str] = Header(None, alias="X-Debug-Token")):
     if not DEBUG_TOOLS_ENABLED:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+
+    expected_token = os.getenv("DEBUG_TOOLS_TOKEN")
+    if expected_token:
+        if not x_debug_token or x_debug_token != expected_token:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Debug access denied",
+            )
+
     return {
         "YOOKASSA_SHOP_ID": os.getenv("YOOKASSA_SHOP_ID"),
         "YOOKASSA_SECRET_KEY_SET": bool(os.getenv("YOOKASSA_SECRET_KEY")),
@@ -232,6 +287,8 @@ def create_payment(
     price = resolve_price()
     _configure_yookassa()
 
+    safe_description = request.description.strip()
+
     amount_str = f"{price.amount_rub:.2f}"
 
     # ОЧЕНЬ ВАЖНО: vat_code и tax_system_code должны совпадать с тем,
@@ -243,7 +300,7 @@ def create_payment(
     #   - vat_code: 1 — Без НДС, 2 — 0%, 3 — 10%, 4 — 20%, 5 — 10/110, 6 — 20/120
     #   - tax_system_code: 1–6 в зависимости от системы налогообложения.
 
-    customer_data = {"full_name": request.description[:128]}
+    customer_data = {"full_name": safe_description[:128]}
     if request.customer_email:
         customer_data["email"] = request.customer_email
 
@@ -251,7 +308,7 @@ def create_payment(
         "customer": customer_data,
         "items": [
             {
-                "description": request.description[:128],
+                "description": safe_description[:128],
                 "quantity": "1.00",
                 "amount": {
                     "value": amount_str,
@@ -272,7 +329,7 @@ def create_payment(
             {
                 "amount": {"value": amount_str, "currency": "RUB"},
                 "capture": True,
-                "description": request.description,
+                "description": safe_description,
                 "confirmation": {
                     "type": "redirect",
                     "return_url": str(request.return_url),

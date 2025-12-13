@@ -22,7 +22,7 @@
    ```
 
 ## Переменные окружения
-Бэкенду нужны две переменные:
+Базовые переменные для подключения к YooKassa:
 - `YOOKASSA_SHOP_ID`
 - `YOOKASSA_SECRET_KEY`
 
@@ -37,6 +37,14 @@
   export YOOKASSA_SHOP_ID=your_shop_id
   export YOOKASSA_SECRET_KEY=your_secret_key
   ```
+
+### Настройки безопасности
+- `PAYMENTS_API_KEY` — обязательный ключ для доступа к платежным эндпоинтам (`X-API-Key` в запросе).
+- `CORS_ALLOWED_ORIGINS` — список доверенных источников через запятую. Если пустой и `REQUIRE_CORS_ORIGINS=true`, сервер не запустится.
+- `REQUIRE_CORS_ORIGINS` — принудительно требует непустой список CORS (рекомендуется для продакшена).
+- `RETURN_URL_ALLOWED_HOSTS` — список разрешённых хостов для `return_url` (например, `example.com,app.example.com`). При пустом значении ограничения не применяются.
+- `DEBUG_TOOLS_ENABLED` — включает диагностический эндпоинт `/debug-env` (по умолчанию выключен).
+- `DEBUG_TOOLS_TOKEN` — токен для доступа к `/debug-env` (ожидается в заголовке `X-Debug-Token`).
 
 ### Диагностика «invalid_credentials»
 Если при создании платежа сервер отвечает 502 с текстом про неверные данные авторизации, 
