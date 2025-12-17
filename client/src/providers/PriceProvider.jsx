@@ -15,6 +15,7 @@ const PriceContext = createContext({
 });
 
 const PRICE_STALE_MS = 5 * 60 * 1000;
+const KEEP_ALIVE_INTERVAL_MS = 4 * 60 * 1000;
 
 const readJsonSafe = async (response) => {
   const contentType = response.headers.get("content-type") || "";
@@ -83,9 +84,41 @@ export const PriceProvider = ({ children }) => {
     }
   }, [apiBaseUrl, isLoading, lastLoadedAt, priceRub, requireApiBase]);
 
+  const pingBackend = useCallback(() => {
+    if (!apiBaseUrl) {
+      return;
+    }
+
+    if (typeof document !== "undefined" && document.visibilityState === "hidden") {
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+    fetch(`${apiBaseUrl}/wake`, {
+      method: "GET",
+      cache: "no-store",
+      keepalive: true,
+      signal: controller.signal,
+    })
+      .catch(() => null)
+      .finally(() => clearTimeout(timeoutId));
+  }, [apiBaseUrl]);
+
   useEffect(() => {
     fetchPrice().catch(() => null);
   }, [fetchPrice]);
+
+  useEffect(() => {
+    if (!apiBaseUrl) {
+      return undefined;
+    }
+
+    pingBackend();
+    const id = setInterval(pingBackend, KEEP_ALIVE_INTERVAL_MS);
+    return () => clearInterval(id);
+  }, [apiBaseUrl, pingBackend]);
 
   const value = useMemo(
     () => ({ priceRub, isLoading, error, refreshPrice: fetchPrice }),

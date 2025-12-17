@@ -28,11 +28,30 @@ logger = logging.getLogger(__name__)
 logger.info("BACKEND STARTED FROM: %s", BASE_DIR)
 logger.info(".env path: %s  exists=%s", ENV_PATH, ENV_PATH.exists())
 
+
+def _parse_allowed_origins(raw: Optional[str]) -> list[str]:
+    """Возвращает список доменов для CORS из переменной окружения.
+
+    Пример формата: "https://site.ru,https://app.site.ru,http://localhost:3000".
+    Если переменная не указана, оставляем открытым доступ ("*"), чтобы не ломать
+    локальную разработку. Всегда убираем лишние пробелы и пустые элементы.
+    """
+
+    if not raw:
+        return ["*"]
+
+    origins = [origin.strip() for origin in raw.split(",") if origin.strip()]
+    return origins or ["*"]
+
+
+ALLOWED_ORIGINS = _parse_allowed_origins(os.getenv("BACKEND_ALLOWED_ORIGINS"))
+logger.info("CORS allowed origins: %s", ALLOWED_ORIGINS)
+
 app = FastAPI(title="Ticket payments")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -194,6 +213,13 @@ def root():
 @app.get("/health")
 def healthcheck() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.get("/wake")
+def wakeup_ping() -> dict[str, str]:
+    """Быстрый lightweight-endpoint для пингов, чтобы не дать сервису уснуть."""
+
+    return {"status": "awake", "ts": datetime.utcnow().isoformat()}
 
 
 @app.get("/debug-env")
