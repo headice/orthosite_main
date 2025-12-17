@@ -5,6 +5,12 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { PriceProvider } from './providers/PriceProvider';
 
+const redirectPath = sessionStorage.getItem('redirectPath');
+if (redirectPath) {
+  sessionStorage.removeItem('redirectPath');
+  window.history.replaceState(null, '', redirectPath);
+}
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>

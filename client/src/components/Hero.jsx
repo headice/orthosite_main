@@ -157,10 +157,10 @@ export const Hero = ({ onBuyTicket }) => {
           {/* ===== СПИКЕРЫ ===== */}
           <div
             id="speakers"
-            className="mt-16 flex flex-col lg:flex-row justify-between items-center gap-10"
+            className="mt-16 flex flex-col lg:flex-row justify-between items-center lg:items-center gap-10"
           >
             {/* левый спикер */}
-            <div className="w-64 text-center lg:text-right">
+            <div className="w-64 text-center lg:text-right pt-12 lg:pt-24">
               <h3 className="text-2xl font-semibold">
                 Иванов Аркадий Николаевич
               </h3>
@@ -177,7 +177,7 @@ export const Hero = ({ onBuyTicket }) => {
             </div>
 
             {/* правый спикер + кнопки */}
-            <div className="w-64 flex flex-col items-center lg:items-start text-center lg:text-left">
+            <div className="w-64 flex flex-col items-center lg:items-start text-center lg:text-left pt-8 lg:pt-16">
               <h3 className="text-2xl font-semibold">
                 Петров Дмитрий Олегович
               </h3>
