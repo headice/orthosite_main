@@ -4,6 +4,7 @@ from datetime import date, datetime
 import logging
 from pathlib import Path
 import os
+from threading import Lock
 from typing import Optional
 from uuid import uuid4
 
@@ -90,6 +91,9 @@ RAW_WINDOWS: list[PriceWindow] = [
 ]
 DEFAULT_PRICE_RUB = 25990
 
+_price_cache_date: Optional[date] = None
+_price_cache_value: Optional[PriceResponse] = None
+
 
 def _materialize_window(window: PriceWindow, anchor_year: int) -> tuple[date, date]:
     start = date(anchor_year, window.start_month, window.start_day)
@@ -112,27 +116,60 @@ def resolve_price(target_date: Optional[date] = None) -> PriceResponse:
     return PriceResponse(amount_rub=DEFAULT_PRICE_RUB, window=None)
 
 
+def get_cached_price(target_date: Optional[date] = None) -> PriceResponse:
+    """Возвращает цену, кэшируя результат на уровне текущей даты.
+
+    Чтобы не дергать расчеты и БД на каждый запрос, держим цену в памяти на
+    протяжении суток. Как только дата сменится, кэш будет пересчитан.
+    """
+
+    global _price_cache_date, _price_cache_value  # pylint: disable=global-statement
+
+    today = target_date or datetime.utcnow().date()
+    if _price_cache_date == today and _price_cache_value:
+        return _price_cache_value
+
+    price = resolve_price(today)
+    _price_cache_date = today
+    _price_cache_value = price
+    return price
+
+
 # === НАСТРОЙКА YOOKASSA ===
 
 def _configure_yookassa() -> None:
-    account_id = os.getenv("YOOKASSA_SHOP_ID")
-    secret_key = os.getenv("YOOKASSA_SECRET_KEY")
+    if getattr(_configure_yookassa, "_configured", False):
+        return
 
-    logger.info(
-        "CONFIG YOOKASSA: SHOP_ID = %s SECRET_KEY_SET = %s", account_id, bool(secret_key)
-    )
+    # Блокируем повторную конфигурацию при высоких нагрузках
+    if not hasattr(_configure_yookassa, "_lock"):
+        _configure_yookassa._lock = Lock()  # type: ignore[attr-defined]
 
-    if not account_id or not secret_key:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=(
-                "YOOKASSA_SHOP_ID и YOOKASSA_SECRET_KEY должны быть заданы в "
-                "переменных окружения"
-            ),
+    with _configure_yookassa._lock:  # type: ignore[attr-defined]
+        if getattr(_configure_yookassa, "_configured", False):
+            return
+
+        account_id = os.getenv("YOOKASSA_SHOP_ID")
+        secret_key = os.getenv("YOOKASSA_SECRET_KEY")
+
+        logger.info(
+            "CONFIG YOOKASSA: SHOP_ID = %s SECRET_KEY_SET = %s",
+            account_id,
+            bool(secret_key),
         )
 
-    Configuration.account_id = account_id
-    Configuration.secret_key = secret_key
+        if not account_id or not secret_key:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=(
+                    "YOOKASSA_SHOP_ID и YOOKASSA_SECRET_KEY должны быть заданы в "
+                    "переменных окружения"
+                ),
+            )
+
+        Configuration.account_id = account_id
+        Configuration.secret_key = secret_key
+        _configure_yookassa._configured = True  # type: ignore[attr-defined]
 
 
 def _extract_confirmation_url(confirmation: object) -> Optional[str]:
@@ -172,7 +209,17 @@ def debug_env():
 @app.get("/price", response_model=PriceResponse)
 def get_price() -> PriceResponse:
     """Возвращает актуальную стоимость билета с учетом календаря."""
-    return resolve_price()
+    return get_cached_price()
+
+
+@app.on_event("startup")
+def _warm_up_price_cache() -> None:
+    """Прогреваем кэш цены, чтобы первый запрос отвечал быстрее."""
+
+    try:
+        get_cached_price()
+    except Exception as exc:  # pylint: disable=broad-except
+        logger.warning("PRICE CACHE WARMUP FAILED: %s", exc)
 
 
 # Если нужен рутовый HTML — можно сделать так:
@@ -183,7 +230,7 @@ def get_price() -> PriceResponse:
 
 @app.post("/payments", response_model=CreatePaymentResponse, status_code=status.HTTP_201_CREATED)
 def create_payment(request: CreatePaymentRequest) -> CreatePaymentResponse:
-    price = resolve_price()
+    price = get_cached_price()
     _configure_yookassa()
 
     amount_str = f"{price.amount_rub:.2f}"

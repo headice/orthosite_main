@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
+import { usePrice } from "../providers/PriceProvider";
 
 const emptyForm = {
   name: "",
@@ -21,8 +22,9 @@ export const TicketModal = ({ open, onClose }) => {
   const [fieldErrors, setFieldErrors] = useState(emptyErrors);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const [priceRub, setPriceRub] = useState(null);
-  const [isPriceLoading, setPriceLoading] = useState(false);
+
+  const { priceRub, isLoading: isPriceLoading, error: priceError, refreshPrice } =
+    usePrice();
 
   const apiBaseUrl = useMemo(
     () => process.env.REACT_APP_API_BASE_URL?.replace(/\/$/, "") || "",
@@ -165,32 +167,16 @@ export const TicketModal = ({ open, onClose }) => {
   useEffect(() => {
     if (!open) return;
 
-    const fetchPrice = async () => {
-      setPriceLoading(true);
-      setError("");
-      try {
-        requireApiBase();
+    refreshPrice().catch((priceFetchError) => {
+      setError(priceFetchError.message || "Ошибка загрузки цены");
+    });
+  }, [open, refreshPrice]);
 
-        const response = await fetch(`${apiBaseUrl}/price`);
-        if (!response.ok) {
-          const message = await readJsonSafe(response).catch(
-            () => "Не удалось получить цену"
-          );
-          throw new Error(
-            typeof message === "string" ? message : "Не удалось получить цену"
-          );
-        }
-        const data = await readJsonSafe(response);
-        setPriceRub(data.amount_rub);
-      } catch (priceError) {
-        setError(priceError.message || "Ошибка загрузки цены");
-      } finally {
-        setPriceLoading(false);
-      }
-    };
-
-    fetchPrice();
-  }, [apiBaseUrl, open]);
+  useEffect(() => {
+    if (priceError) {
+      setError(priceError);
+    }
+  }, [priceError]);
 
   return (
     <AnimatePresence>
