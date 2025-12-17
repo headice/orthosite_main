@@ -157,7 +157,7 @@ export const Hero = ({ onBuyTicket }) => {
           {/* ===== СПИКЕРЫ ===== */}
           <div
             id="speakers"
-            className="mt-16 flex flex-col lg:flex-row justify-between items-center gap-10"
+            className="mt-16 flex flex-col lg:flex-row justify-between items-center lg:items-start gap-10"
           >
             {/* левый спикер */}
             <div className="w-64 text-center lg:text-right">
