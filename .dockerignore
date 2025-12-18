@@ -1,0 +1,14 @@
+# Prevent unnecessary files from entering the build context
+.git
+.gitignore
+__pycache__
+*.py[cod]
+*.swp
+*.log
+.env
+.vscode
+.idea
+venv
+.venv
+node_modules
+client
