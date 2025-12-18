@@ -60,6 +60,25 @@
    - `GET /price` — текущая цена билета
    - `POST /payments` — создание платежа в YooKassa
 
+## Деплой в контейнер (например, Timeweb Cloud)
+В каталоге `backend` есть `Dockerfile`, который разворачивает приложение на 8000 порту.
+1. Соберите образ из корня репозитория (чтобы Docker увидел `backend/Dockerfile`):
+   ```bash
+   docker build -f backend/Dockerfile -t ticket-backend ./backend
+   ```
+2. Запустите контейнер, пробросив порт 8000 и передав переменные окружения:
+   ```bash
+   docker run --rm -p 8000:8000 \
+     -e YOOKASSA_SHOP_ID=your_shop_id \
+     -e YOOKASSA_SECRET_KEY=your_secret_key \
+     ticket-backend
+   ```
+3. В панели Timeweb укажите:
+   - команду запуска: `uvicorn main:app --host 0.0.0.0 --port 8000`
+   - рабочую директорию контейнера: `/app`
+   - переменные окружения `YOOKASSA_SHOP_ID`, `YOOKASSA_SECRET_KEY` (и при необходимости `BACKEND_ALLOWED_ORIGINS`).
+   Образ автоматически открывает порт 8000 (`EXPOSE 8000`), поэтому после старта сервис будет виден health-чекам.
+
 ## Быстрая проверка
 В отдельном терминале (с активированным окружением и заданными переменными):
 ```bash
