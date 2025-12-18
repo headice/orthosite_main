@@ -1,0 +1,15 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    ports:
+      - "9000:80"
+    depends_on:
+      - api
+
+  api:
+    build:
+      context: ./backend
+    ports:
+      - "9001:8000"
