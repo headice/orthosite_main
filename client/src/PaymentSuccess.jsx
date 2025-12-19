@@ -130,6 +130,59 @@ export const PaymentSuccess = () => {
     fetchStatusData();
   }, [apiBaseUrl, fetchStatus, paymentId, searchParams]);
 
+  useEffect(() => {
+    const ensureScript = (id, attributes = {}) => {
+      if (document.getElementById(id)) {
+        return document.getElementById(id);
+      }
+      const script = document.createElement("script");
+      script.id = id;
+      Object.entries(attributes).forEach(([key, value]) => {
+        script[key] = value;
+      });
+      document.head.appendChild(script);
+      return script;
+    };
+
+    const vkScript = ensureScript("vk-retargeting-script", {
+      type: "text/javascript",
+      async: true,
+      src: "https://vk.com/js/api/openapi.js?169",
+    });
+
+    const initVkRetargeting = () => {
+      if (window.VK?.Retargeting) {
+        window.VK.Retargeting.Init("3728550");
+        window.VK.Retargeting.Hit();
+      }
+    };
+
+    if (vkScript) {
+      vkScript.addEventListener("load", initVkRetargeting);
+      initVkRetargeting();
+    }
+
+    if (!document.getElementById("yandex-metrika-script")) {
+      const yandexScript = document.createElement("script");
+      yandexScript.id = "yandex-metrika-script";
+      yandexScript.type = "text/javascript";
+      yandexScript.text = `(function(m,e,t,r,i,k,a){
+        m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+        m[i].l=1*new Date();
+        for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+        k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+      })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=105921891', 'ym');
+      ym(105921891, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});`;
+      document.head.appendChild(yandexScript);
+    }
+
+    return () => {
+      if (vkScript) {
+        vkScript.removeEventListener("load", initVkRetargeting);
+      }
+    };
+  }, []);
+
   const displayStatus = STATUS_LABELS[status] || STATUS_LABELS.unknown;
 
   return (
@@ -164,9 +217,6 @@ export const PaymentSuccess = () => {
             Связаться с организаторами
           </a>
         </div>
-        {(status === "pending" || status === "unknown") && (
-        
-        )}
         {status === "canceled" && (
           <Link
             to="/"
@@ -175,6 +225,22 @@ export const PaymentSuccess = () => {
             Попробовать оплатить снова
           </Link>
         )}
+        <noscript>
+          <img
+            src="https://vk.com/rtrg?p=3728550"
+            style={{ position: "fixed", left: "-999px" }}
+            alt=""
+          />
+        </noscript>
+        <noscript>
+          <div>
+            <img
+              src="https://mc.yandex.ru/watch/105921891"
+              style={{ position: "absolute", left: "-9999px" }}
+              alt=""
+            />
+          </div>
+        </noscript>
       </main>
     </div>
   );
