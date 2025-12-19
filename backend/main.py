@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from datetime import date, datetime
+from email.message import EmailMessage
 import logging
-from pathlib import Path
 import os
+from pathlib import Path
+import smtplib
 from threading import Lock
 from typing import Optional, TypedDict
 from uuid import uuid4
@@ -115,13 +117,21 @@ class PaymentRecord(TypedDict):
     description: str
     amount_rub: int
     created_at: str
+    customer_email: Optional[str]
+    receipt_sent: bool
 
 
 _payment_registry: dict[str, PaymentRecord] = {}
 _payment_registry_lock = Lock()
 
 
-def _register_payment(payment_id: str, description: str, amount_rub: int, status: str) -> None:
+def _register_payment(
+    payment_id: str,
+    description: str,
+    amount_rub: int,
+    status: str,
+    customer_email: Optional[str],
+) -> None:
     with _payment_registry_lock:
         _payment_registry[payment_id] = {
             "payment_id": payment_id,
@@ -129,6 +139,8 @@ def _register_payment(payment_id: str, description: str, amount_rub: int, status
             "description": description,
             "amount_rub": amount_rub,
             "created_at": datetime.utcnow().isoformat(),
+            "customer_email": customer_email,
+            "receipt_sent": False,
         }
 
 
@@ -147,7 +159,72 @@ def _update_payment_status(payment_id: Optional[str], status: Optional[str]) -> 
                 "description": "unknown",
                 "amount_rub": 0,
                 "created_at": datetime.utcnow().isoformat(),
+                "customer_email": None,
+                "receipt_sent": False,
             }
+
+
+def _smtp_configured() -> bool:
+    return bool(os.getenv("SMTP_HOST") and os.getenv("SMTP_FROM"))
+
+
+def _send_receipt_email(
+    *,
+    to_email: str,
+    payment_id: str,
+    amount_rub: int,
+    description: str,
+) -> None:
+    host = os.getenv("SMTP_HOST")
+    if not host:
+        raise RuntimeError("SMTP_HOST is not configured")
+    port = int(os.getenv("SMTP_PORT", "587"))
+    username = os.getenv("SMTP_USER")
+    password = os.getenv("SMTP_PASSWORD")
+    sender = os.getenv("SMTP_FROM")
+    use_tls = os.getenv("SMTP_USE_TLS", "true").lower() in ("1", "true", "yes")
+
+    if not sender:
+        raise RuntimeError("SMTP_FROM is not configured")
+
+    message = EmailMessage()
+    message["From"] = sender
+    message["To"] = to_email
+    message["Subject"] = "Чек по оплате участия"
+    message.set_content(
+        "\n".join(
+            [
+                "Спасибо за оплату!",
+                f"Описание: {description}",
+                f"Сумма: {amount_rub} ₽",
+                f"ID платежа: {payment_id}",
+                "",
+                "Если вы ожидаете кассовый чек от ЮKassa, убедитесь, что",
+                "он разрешен в настройках магазина. В тестовом режиме чеки",
+                "на почту не отправляются.",
+            ]
+        )
+    )
+
+    with smtplib.SMTP(host, port, timeout=10) as smtp:
+        if use_tls:
+            smtp.starttls()
+        if username and password:
+            smtp.login(username, password)
+        smtp.send_message(message)
+
+
+def _should_send_receipt(payment_id: str) -> bool:
+    with _payment_registry_lock:
+        record = _payment_registry.get(payment_id)
+        return bool(record and not record["receipt_sent"])
+
+
+def _set_receipt_sent(payment_id: str) -> None:
+    with _payment_registry_lock:
+        record = _payment_registry.get(payment_id)
+        if record:
+            record["receipt_sent"] = True
 
 
 # === ЦЕНОВЫЕ ОКНА ===
@@ -421,6 +498,7 @@ def create_payment(request: CreatePaymentRequest) -> CreatePaymentResponse:
         description=request.description,
         amount_rub=price.amount_rub,
         status=payment.status,
+        customer_email=str(request.email),
     )
 
     return CreatePaymentResponse(
@@ -451,6 +529,21 @@ async def yookassa_webhook(request: Request) -> dict[str, str]:
             amount,
         )
         _update_payment_status(payment_id, status_val)
+        if payment_id and _smtp_configured() and _should_send_receipt(payment_id):
+            with _payment_registry_lock:
+                record = _payment_registry.get(payment_id)
+            if record and record["customer_email"]:
+                try:
+                    _send_receipt_email(
+                        to_email=record["customer_email"],
+                        payment_id=payment_id,
+                        amount_rub=record["amount_rub"],
+                        description=record["description"],
+                    )
+                    _set_receipt_sent(payment_id)
+                    logger.info("RECEIPT EMAIL SENT: %s", payment_id)
+                except Exception as exc:  # pylint: disable=broad-except
+                    logger.error("RECEIPT EMAIL FAILED: %s", exc)
     elif event == "payment.canceled":
         payment_id = payment.get("id")
         logger.info("PAYMENT CANCELED: %s", payment_id)
