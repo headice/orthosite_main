@@ -1,3 +1,4 @@
+```python
 from __future__ import annotations
 
 from datetime import date, datetime
@@ -11,7 +12,6 @@ from uuid import uuid4
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field, HttpUrl
 from yookassa import Configuration, Payment
 from yookassa.domain.exceptions import ApiError, UnauthorizedError
@@ -38,9 +38,9 @@ DEFAULT_ALLOWED_ORIGINS = [
 def _parse_allowed_origins(raw: Optional[str]) -> list[str]:
     """Возвращает список доменов для CORS из переменной окружения.
 
-    Пример формата: "https://site.ru,https://app.site.ru,http://localhost:3000".
-    Если переменная не указана, оставляем открытым доступ ("*"), чтобы не ломать
-    локальную разработку. Всегда убираем лишние пробелы и пустые элементы.
+    Формат: "https://site.ru,https://app.site.ru,http://localhost:3000".
+    Если переменная не указана — используем DEFAULT_ALLOWED_ORIGINS.
+    Всегда убираем лишние пробелы и пустые элементы.
     """
 
     if not raw:
@@ -66,11 +66,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Если index.html реально нужен — раскомментируй и создай файл.
-# FRONT_PAGE = (BASE_DIR / "templates" / "index.html").read_text(encoding="utf-8")
-
-
 # === МОДЕЛИ ===
+
 
 class PriceWindow(BaseModel):
     start_month: int
@@ -110,6 +107,7 @@ class PaymentStatusResponse(BaseModel):
 
 
 # === ПАМЯТЬ О ПЛАТЕЖАХ ===
+
 
 class PaymentRecord(TypedDict):
     payment_id: str
@@ -153,9 +151,19 @@ def _update_payment_status(payment_id: Optional[str], status: Optional[str]) -> 
 
 
 # === ЦЕНОВЫЕ ОКНА ===
+# Требование:
+# - с 20.12 по 30.12 цена = 26990
+# - с 31.12 по 28.01 цена = 29990
 
 RAW_WINDOWS: list[PriceWindow] = [
-    PriceWindow(start_month=12, start_day=20, end_month=12, end_day=30, amount_rub=26990),
+    PriceWindow(
+        start_month=12,
+        start_day=20,
+        end_month=12,
+        end_day=30,
+        amount_rub=26990,
+        crosses_year=False,
+    ),
     PriceWindow(
         start_month=12,
         start_day=31,
@@ -165,6 +173,8 @@ RAW_WINDOWS: list[PriceWindow] = [
         crosses_year=True,
     ),
 ]
+
+# Цена вне окон (оставил как было)
 DEFAULT_PRICE_RUB = 25990
 
 _price_cache_date: Optional[date] = None
@@ -172,7 +182,14 @@ _price_cache_value: Optional[PriceResponse] = None
 
 
 def _materialize_window(window: PriceWindow, anchor_year: int) -> tuple[date, date]:
+    """Преобразует окно PriceWindow в реальные даты (start, end) для anchor_year.
+
+    Для окна, пересекающего год (например 31.12–28.01), end будет в anchor_year+1.
+    """
     start = date(anchor_year, window.start_month, window.start_day)
+
+    # Если окно помечено как crosses_year, то конец может быть в следующем году.
+    # Условие end_month < start_month гарантирует, что действительно "переходим через год".
     end_year = (
         anchor_year + 1
         if window.crosses_year and window.end_month < window.start_month
@@ -183,22 +200,32 @@ def _materialize_window(window: PriceWindow, anchor_year: int) -> tuple[date, da
 
 
 def resolve_price(target_date: Optional[date] = None) -> PriceResponse:
+    """Определяет цену на указанную дату.
+
+    Делает это безопасно для окон, которые пересекают границу года,
+    без "магии" и без зависимости от порядка окон.
+    """
     today = target_date or datetime.utcnow().date()
+
+    # Нам достаточно проверить 2 якоря: прошлый год и текущий.
+    # Это покрывает окна вида "31.12–28.01" как в начале года, так и в конце.
+    anchors = (today.year - 1, today.year)
+
     for window in RAW_WINDOWS:
-        for anchor in (today.year - 1, today.year, today.year + 1):
+        for anchor in anchors:
             start, end = _materialize_window(window, anchor)
             if start <= today <= end:
                 return PriceResponse(amount_rub=window.amount_rub, window=window)
+
     return PriceResponse(amount_rub=DEFAULT_PRICE_RUB, window=None)
 
 
 def get_cached_price(target_date: Optional[date] = None) -> PriceResponse:
     """Возвращает цену, кэшируя результат на уровне текущей даты.
 
-    Чтобы не дергать расчеты и БД на каждый запрос, держим цену в памяти на
+    Чтобы не дергать расчеты на каждый запрос, держим цену в памяти на
     протяжении суток. Как только дата сменится, кэш будет пересчитан.
     """
-
     global _price_cache_date, _price_cache_value  # pylint: disable=global-statement
 
     today = target_date or datetime.utcnow().date()
@@ -212,6 +239,7 @@ def get_cached_price(target_date: Optional[date] = None) -> PriceResponse:
 
 
 # === НАСТРОЙКА YOOKASSA ===
+
 
 def _configure_yookassa() -> None:
     if getattr(_configure_yookassa, "_configured", False):
@@ -250,7 +278,6 @@ def _configure_yookassa() -> None:
 
 def _extract_confirmation_url(confirmation: object) -> Optional[str]:
     """Безопасно извлекает ссылку на подтверждение из ответа Yookassa."""
-
     for key in ("confirmation_url", "url"):
         if isinstance(confirmation, dict) and key in confirmation:
             return confirmation[key]
@@ -261,6 +288,7 @@ def _extract_confirmation_url(confirmation: object) -> Optional[str]:
 
 
 # === РОУТЫ ===
+
 
 @app.get("/")
 def root():
@@ -275,7 +303,6 @@ def healthcheck() -> dict[str, str]:
 @app.get("/wake")
 def wakeup_ping() -> dict[str, str]:
     """Быстрый lightweight-endpoint для пингов, чтобы не дать сервису уснуть."""
-
     return {"status": "awake", "ts": datetime.utcnow().isoformat()}
 
 
@@ -288,17 +315,10 @@ def get_price() -> PriceResponse:
 @app.on_event("startup")
 def _warm_up_price_cache() -> None:
     """Прогреваем кэш цены, чтобы первый запрос отвечал быстрее."""
-
     try:
         get_cached_price()
     except Exception as exc:  # pylint: disable=broad-except
         logger.warning("PRICE CACHE WARMUP FAILED: %s", exc)
-
-
-# Если нужен рутовый HTML — можно сделать так:
-# @app.get("/", response_class=HTMLResponse)
-# def landing_page() -> HTMLResponse:
-#     return HTMLResponse(content=FRONT_PAGE)
 
 
 @app.post("/payments", response_model=CreatePaymentResponse, status_code=status.HTTP_201_CREATED)
@@ -423,15 +443,15 @@ async def yookassa_webhook(request: Request) -> dict[str, str]:
     if event == "payment.succeeded":
         payment_id = payment.get("id")
         amount = payment.get("amount", {}).get("value")
-        status = payment.get("status")
+        status_val = payment.get("status")
 
         logger.info(
             "PAYMENT SUCCEEDED: id=%s status=%s amount=%s",
             payment_id,
-            status,
+            status_val,
             amount,
         )
-        _update_payment_status(payment_id, status)
+        _update_payment_status(payment_id, status_val)
     elif event == "payment.canceled":
         payment_id = payment.get("id")
         logger.info("PAYMENT CANCELED: %s", payment_id)
@@ -484,3 +504,4 @@ def get_payment_status(payment_id: str) -> PaymentStatusResponse:
 
     _update_payment_status(payment.id, payment.status)
     return PaymentStatusResponse(payment_id=payment.id, status=payment.status)
+```
