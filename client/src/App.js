@@ -5,6 +5,7 @@ import { Home } from './Home';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Politika from './Politika';
 import  Footer  from "./components/Footer.jsx"
+import { PaymentSuccess } from "./PaymentSuccess";
 
 function App() {
   return (
@@ -16,6 +17,9 @@ function App() {
 
           {/* Политика обработки персональных данных */}
           <Route path="/privacy-policy" element={<Politika />} />
+
+          {/* Спасибо за покупку */}
+          <Route path="/payment/success" element={<PaymentSuccess />} />
         </Routes>
 
         {/* Футер будет на всех страницах */}
