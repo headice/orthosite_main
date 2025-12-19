@@ -1,4 +1,3 @@
-```python
 from __future__ import annotations
 
 from datetime import date, datetime
@@ -12,7 +11,7 @@ from uuid import uuid4
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import BaseModel, EmailStr, Field, HttpUrl
 from yookassa import Configuration, Payment
 from yookassa.domain.exceptions import ApiError, UnauthorizedError
 
@@ -87,6 +86,7 @@ class PriceResponse(BaseModel):
 
 class CreatePaymentRequest(BaseModel):
     description: str = Field(..., example="Билет на интенсив")
+    email: EmailStr = Field(..., example="user@example.com")
     return_url: HttpUrl = Field(
         ...,
         example="https://example.com/payment/success",
@@ -341,8 +341,9 @@ def create_payment(request: CreatePaymentRequest) -> CreatePaymentResponse:
         "customer": {
             # здесь лучше подставить реальные данные клиента
             "full_name": request.description[:128],
-            "email": "test@example.com",
+            "email": str(request.email),
         },
+        "send": True,
         "items": [
             {
                 "description": request.description[:128],
@@ -504,4 +505,3 @@ def get_payment_status(payment_id: str) -> PaymentStatusResponse:
 
     _update_payment_status(payment.id, payment.status)
     return PaymentStatusResponse(payment_id=payment.id, status=payment.status)
-```
