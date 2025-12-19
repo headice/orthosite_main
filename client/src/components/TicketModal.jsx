@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { usePrice } from "../providers/PriceProvider";
 
 const emptyForm = {
@@ -134,7 +134,7 @@ export const TicketModal = ({ open, onClose }) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           description: `Билет: ${form.name} (${form.email})`,
-          return_url: window.location.origin,
+          return_url: `${window.location.origin}/payment/success`,
         }),
       });
 
