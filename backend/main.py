@@ -29,6 +29,9 @@ logger.info("BACKEND STARTED FROM: %s", BASE_DIR)
 logger.info(".env path: %s  exists=%s", ENV_PATH, ENV_PATH.exists())
 
 
+DEFAULT_ALLOWED_ORIGINS = ["https://headice-orthosite-main-3b40.twc1.net"]
+
+
 def _parse_allowed_origins(raw: Optional[str]) -> list[str]:
     """Возвращает список доменов для CORS из переменной окружения.
 
@@ -38,10 +41,13 @@ def _parse_allowed_origins(raw: Optional[str]) -> list[str]:
     """
 
     if not raw:
-        return ["*"]
+        return DEFAULT_ALLOWED_ORIGINS.copy()
 
     origins = [origin.strip() for origin in raw.split(",") if origin.strip()]
-    return origins or ["*"]
+    for default_origin in DEFAULT_ALLOWED_ORIGINS:
+        if default_origin not in origins:
+            origins.append(default_origin)
+    return origins or DEFAULT_ALLOWED_ORIGINS.copy()
 
 
 ALLOWED_ORIGINS = _parse_allowed_origins(os.getenv("BACKEND_ALLOWED_ORIGINS"))
@@ -220,16 +226,6 @@ def wakeup_ping() -> dict[str, str]:
     """Быстрый lightweight-endpoint для пингов, чтобы не дать сервису уснуть."""
 
     return {"status": "awake", "ts": datetime.utcnow().isoformat()}
-
-
-@app.get("/debug-env")
-def debug_env():
-    return {
-        "YOOKASSA_SHOP_ID": os.getenv("YOOKASSA_SHOP_ID"),
-        "YOOKASSA_SECRET_KEY_SET": bool(os.getenv("YOOKASSA_SECRET_KEY")),
-        "BASE_DIR": str(BASE_DIR),
-        "ENV_PATH": str(ENV_PATH),
-    }
 
 
 @app.get("/price", response_model=PriceResponse)
