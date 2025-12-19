@@ -5,7 +5,7 @@ import logging
 from pathlib import Path
 import os
 from threading import Lock
-from typing import Optional
+from typing import Optional, TypedDict
 from uuid import uuid4
 
 from dotenv import load_dotenv
@@ -107,6 +107,49 @@ class CreatePaymentResponse(BaseModel):
 class PaymentStatusResponse(BaseModel):
     payment_id: str
     status: str
+
+
+# === ПАМЯТЬ О ПЛАТЕЖАХ ===
+
+class PaymentRecord(TypedDict):
+    payment_id: str
+    status: str
+    description: str
+    amount_rub: int
+    created_at: str
+
+
+_payment_registry: dict[str, PaymentRecord] = {}
+_payment_registry_lock = Lock()
+
+
+def _register_payment(payment_id: str, description: str, amount_rub: int, status: str) -> None:
+    with _payment_registry_lock:
+        _payment_registry[payment_id] = {
+            "payment_id": payment_id,
+            "status": status,
+            "description": description,
+            "amount_rub": amount_rub,
+            "created_at": datetime.utcnow().isoformat(),
+        }
+
+
+def _update_payment_status(payment_id: Optional[str], status: Optional[str]) -> None:
+    if not payment_id or not status:
+        return
+
+    with _payment_registry_lock:
+        record = _payment_registry.get(payment_id)
+        if record:
+            record["status"] = status
+        else:
+            _payment_registry[payment_id] = {
+                "payment_id": payment_id,
+                "status": status,
+                "description": "unknown",
+                "amount_rub": 0,
+                "created_at": datetime.utcnow().isoformat(),
+            }
 
 
 # === ЦЕНОВЫЕ ОКНА ===
@@ -354,6 +397,13 @@ def create_payment(request: CreatePaymentRequest) -> CreatePaymentResponse:
             detail="Yookassa не вернула ссылку для подтверждения",
         )
 
+    _register_payment(
+        payment_id=payment.id,
+        description=request.description,
+        amount_rub=price.amount_rub,
+        status=payment.status,
+    )
+
     return CreatePaymentResponse(
         payment_id=payment.id,
         status=payment.status,
@@ -381,9 +431,11 @@ async def yookassa_webhook(request: Request) -> dict[str, str]:
             status,
             amount,
         )
-        # TODO: Здесь стоит обновить запись заказа в БД.
+        _update_payment_status(payment_id, status)
     elif event == "payment.canceled":
-        logger.info("PAYMENT CANCELED: %s", payment.get("id"))
+        payment_id = payment.get("id")
+        logger.info("PAYMENT CANCELED: %s", payment_id)
+        _update_payment_status(payment_id, payment.get("status", "canceled"))
 
     return {"status": "ok"}
 
@@ -391,6 +443,14 @@ async def yookassa_webhook(request: Request) -> dict[str, str]:
 @app.get("/payments/{payment_id}", response_model=PaymentStatusResponse)
 def get_payment_status(payment_id: str) -> PaymentStatusResponse:
     _configure_yookassa()
+
+    with _payment_registry_lock:
+        cached_record = _payment_registry.get(payment_id)
+    if cached_record and cached_record["status"] in {"succeeded", "canceled"}:
+        return PaymentStatusResponse(
+            payment_id=payment_id,
+            status=cached_record["status"],
+        )
 
     try:
         payment = Payment.find_one(payment_id)
@@ -422,4 +482,5 @@ def get_payment_status(payment_id: str) -> PaymentStatusResponse:
             detail="Неожиданная ошибка при обращении к Yookassa",
         ) from exc
 
+    _update_payment_status(payment.id, payment.status)
     return PaymentStatusResponse(payment_id=payment.id, status=payment.status)

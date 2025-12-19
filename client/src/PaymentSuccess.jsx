@@ -52,6 +52,19 @@ export const PaymentSuccess = () => {
     );
   }, []);
 
+  useEffect(() => {
+    if (!paymentId) {
+      return;
+    }
+
+    const currentParams = new URLSearchParams(window.location.search);
+    if (!currentParams.get("payment_id")) {
+      currentParams.set("payment_id", paymentId);
+      const newUrl = `${window.location.pathname}?${currentParams.toString()}`;
+      window.history.replaceState({}, "", newUrl);
+    }
+  }, [paymentId]);
+
   const fetchStatus = useCallback(async () => {
     if (!apiBaseUrl) {
       setError("Бэкенд не настроен. Проверьте адрес API.");
