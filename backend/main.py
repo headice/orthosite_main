@@ -1,4 +1,3 @@
-```python
 from __future__ import annotations
 
 from datetime import date, datetime
@@ -504,4 +503,3 @@ def get_payment_status(payment_id: str) -> PaymentStatusResponse:
 
     _update_payment_status(payment.id, payment.status)
     return PaymentStatusResponse(payment_id=payment.id, status=payment.status)
-```

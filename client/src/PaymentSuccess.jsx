@@ -164,9 +164,6 @@ export const PaymentSuccess = () => {
             Связаться с организаторами
           </a>
         </div>
-        {(status === "pending" || status === "unknown") && (
-        
-        )}
         {status === "canceled" && (
           <Link
             to="/"
