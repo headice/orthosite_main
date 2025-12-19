@@ -32,36 +32,39 @@ export const PaymentSuccess = () => {
   const [status, setStatus] = useState("pending");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [analyticsSent, setAnalyticsSent] = useState(false);
 
   const searchParams = useMemo(
     () => new URLSearchParams(window.location.search),
     []
   );
+
   const apiBaseUrl = useMemo(
-    () => process.env.REACT_APP_API_BASE_URL?.replace(/\/$/, "") || "",
+    () => process.env.REACT_APP_API_BASE_URL?.replace(/\/$/, "")  "",
     []
   );
 
   const paymentId = useMemo(() => {
-    const queryPaymentId =
-      searchParams.get("payment_id") || searchParams.get("paymentId");
     return (
-      queryPaymentId ||
-      localStorage.getItem("last_payment_id") ||
+      searchParams.get("payment_id") 
+      searchParams.get("paymentId") 
+      localStorage.getItem("last_payment_id") 
       ""
     );
-  }, []);
+  }, [searchParams]);
 
+  // Подставляем payment_id в URL, если его нет
   useEffect(() => {
-    if (!paymentId) {
-      return;
-    }
+    if (!paymentId) return;
 
-    const currentParams = new URLSearchParams(window.location.search);
-    if (!currentParams.get("payment_id")) {
-      currentParams.set("payment_id", paymentId);
-      const newUrl = `${window.location.pathname}?${currentParams.toString()}`;
-      window.history.replaceState({}, "", newUrl);
+    const params = new URLSearchParams(window.location.search);
+    if (!params.get("payment_id")) {
+      params.set("payment_id", paymentId);
+      window.history.replaceState(
+        {},
+        "",
+        ${window.location.pathname}?${params.toString()}
+      );
     }
   }, [paymentId]);
 
@@ -83,126 +86,92 @@ export const PaymentSuccess = () => {
     try {
       setIsLoading(true);
       setError("");
-      const response = await fetch(`${apiBaseUrl}/payments/${paymentId}`);
+
+      const response = await fetch(
+        ${apiBaseUrl}/payments/${paymentId}
+      );
+
       if (!response.ok) {
         throw new Error("Не удалось получить статус платежа.");
       }
+
       const data = await response.json();
-      const rawStatus = data.status || "unknown";
+      const rawStatus = data.status  "unknown";
       const normalizedStatus =
         rawStatus === "waiting_for_capture" ? "pending" : rawStatus;
+
       setStatus(normalizedStatus);
+
       if (normalizedStatus === "succeeded") {
         localStorage.removeItem("last_payment_id");
       }
-    } catch (fetchError) {
-      setError(fetchError.message || "Ошибка загрузки статуса платежа");
+    } catch (err) {
+      setError(err.message  "Ошибка загрузки статуса платежа");
       setStatus("unknown");
     } finally {
       setIsLoading(false);
     }
   }, [apiBaseUrl, paymentId]);
 
+  // Первичная загрузка статуса
   useEffect(() => {
     const statusFromQuery = searchParams.get("status");
-    if (statusFromQuery === "canceled" || statusFromQuery === "cancelled") {
+    if (statusFromQuery === "canceled"  statusFromQuery === "cancelled") {
       setStatus("canceled");
+      setIsLoading(false);
+      return;
     }
 
-    const fetchStatusData = async () => {
-      if (!apiBaseUrl) {
-        setError("Бэкенд не настроен. Проверьте адрес API.");
-        setStatus("unknown");
-        setIsLoading(false);
-        return;
-      }
+    fetchStatus();
+  }, [fetchStatus, searchParams]);
 
-      if (!paymentId) {
-        setError("Не найден идентификатор платежа.");
-        setStatus("unknown");
-        setIsLoading(false);
-        return;
-      }
-
-      await fetchStatus();
-    };
-
-    fetchStatusData();
-  }, [apiBaseUrl, fetchStatus, paymentId, searchParams]);
-
+  // 🔥 АНАЛИТИКА (ТОЛЬКО 1 РАЗ И ТОЛЬКО ПРИ SUCCEEDED)
   useEffect(() => {
-    const ensureScript = (id, attributes = {}) => {
-      if (document.getElementById(id)) {
-        return document.getElementById(id);
-      }
-      const script = document.createElement("script");
-      script.id = id;
-      Object.entries(attributes).forEach(([key, value]) => {
-        script[key] = value;
+    if (status !== "succeeded") return;
+    if (analyticsSent) return;
+
+    // 🟡 Яндекс Метрика
+    if (typeof window.ym === "function") {
+      window.ym(105921891, "reachGoal", "purchase", {
+        payment_id: paymentId,
       });
-      document.head.appendChild(script);
-      return script;
-    };
-
-    const vkScript = ensureScript("vk-retargeting-script", {
-      type: "text/javascript",
-      async: true,
-      src: "https://vk.com/js/api/openapi.js?169",
-    });
-
-    const initVkRetargeting = () => {
-      if (window.VK?.Retargeting) {
-        window.VK.Retargeting.Init("3728550");
-        window.VK.Retargeting.Hit();
-      }
-    };
-
-    if (vkScript) {
-      vkScript.addEventListener("load", initVkRetargeting);
-      initVkRetargeting();
     }
 
-    if (!document.getElementById("yandex-metrika-script")) {
-      const yandexScript = document.createElement("script");
-      yandexScript.id = "yandex-metrika-script";
-      yandexScript.type = "text/javascript";
-      yandexScript.text = `(function(m,e,t,r,i,k,a){
-        m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-        m[i].l=1*new Date();
-        for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
-        k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
-      })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=105921891', 'ym');
-      ym(105921891, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});`;
-      document.head.appendChild(yandexScript);
+    // 🔵 VK Pixel
+    if (window.VK?.Retargeting) {
+      window.VK.Retargeting.Event("purchase");
     }
 
-    return () => {
-      if (vkScript) {
-        vkScript.removeEventListener("load", initVkRetargeting);
-      }
-    };
-  }, []);
+    setAnalyticsSent(true);
+  }, [status, paymentId, analyticsSent]);
 
-  const displayStatus = STATUS_LABELS[status] || STATUS_LABELS.unknown;
+  const displayStatus = STATUS_LABELS[status]  STATUS_LABELS.unknown;
 
-  return (
+return (
     <div className="min-h-screen bg-[#030b1f] text-white">
       <main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col items-center justify-center px-6 py-16 text-center">
         <p className="text-sm uppercase tracking-[0.3em] text-blue-200">
           {displayStatus.eyebrow}
         </p>
+
         <h1 className="mt-4 text-3xl font-semibold sm:text-4xl">
           {displayStatus.title}
         </h1>
+
         <p className="mt-4 text-base text-blue-100 sm:text-lg">
           {displayStatus.description}
         </p>
+
         {isLoading && (
-          <p className="mt-4 text-sm text-blue-200">Проверяем статус оплаты...</p>
+          <p className="mt-4 text-sm text-blue-200">
+            Проверяем статус оплаты...
+          </p>
         )}
+
         {!isLoading && error && (
           <p className="mt-4 text-sm text-rose-200">{error}</p>
         )}
+
         <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
           <Link
             to="/"
@@ -210,13 +179,15 @@ export const PaymentSuccess = () => {
           >
             Вернуться на главную
           </Link>
+
           <a
             href="mailto:info@orthosite.ru"
-            className="rounded-full border border-white/40 px-6 py-3 text-sm font-semibold text-white transition hover:border-white hover:text-white"
+            className="rounded-full border border-white/40 px-6 py-3 text-sm font-semibold text-white transition hover:border-white"
           >
             Связаться с организаторами
           </a>
         </div>
+
         {status === "canceled" && (
           <Link
             to="/"
@@ -225,22 +196,6 @@ export const PaymentSuccess = () => {
             Попробовать оплатить снова
           </Link>
         )}
-        <noscript>
-          <img
-            src="https://vk.com/rtrg?p=3728550"
-            style={{ position: "fixed", left: "-999px" }}
-            alt=""
-          />
-        </noscript>
-        <noscript>
-          <div>
-            <img
-              src="https://mc.yandex.ru/watch/105921891"
-              style={{ position: "absolute", left: "-9999px" }}
-              alt=""
-            />
-          </div>
-        </noscript>
       </main>
     </div>
   );
