@@ -57,6 +57,14 @@ def _parse_allowed_origins(raw: Optional[str]) -> list[str]:
 ALLOWED_ORIGINS = _parse_allowed_origins(os.getenv("BACKEND_ALLOWED_ORIGINS"))
 logger.info("CORS allowed origins: %s", ALLOWED_ORIGINS)
 
+
+def _include_yookassa_receipt() -> bool:
+    """Определяет, нужно ли отправлять receipt в ЮKassa."""
+    raw = os.getenv("YOOKASSA_RECEIPT_ENABLED")
+    if raw is None:
+        return False
+    return raw.strip().lower() in ("1", "true", "yes", "on")
+
 app = FastAPI(title="Ticket payments")
 
 app.add_middleware(
@@ -438,19 +446,19 @@ def create_payment(request: CreatePaymentRequest) -> CreatePaymentResponse:
     }
 
     try:
-        payment = Payment.create(
-            {
-                "amount": {"value": amount_str, "currency": "RUB"},
-                "capture": True,
-                "description": request.description,
-                "confirmation": {
-                    "type": "redirect",
-                    "return_url": str(request.return_url),
-                },
-                "receipt": receipt,
+        payment_payload = {
+            "amount": {"value": amount_str, "currency": "RUB"},
+            "capture": True,
+            "description": request.description,
+            "confirmation": {
+                "type": "redirect",
+                "return_url": str(request.return_url),
             },
-            str(uuid4()),
-        )
+        }
+        if _include_yookassa_receipt():
+            payment_payload["receipt"] = receipt
+
+        payment = Payment.create(payment_payload, str(uuid4()))
 
     except UnauthorizedError as exc:
         logger.error("YOOKASSA unauthorized: %s", exc)
