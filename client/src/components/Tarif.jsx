@@ -31,7 +31,7 @@ export const Tarif = () => {
 
       {/* === КАРТОЧКА ТАРИФА === */}
       <div className="w-full max-w-md rounded-[32px] border border-white/20 shadow-white/10 bg-gradient-to-br from-[#122C58] via-[#1D478F] to-[#122C58] p-8 text-white shadow-lg">
-        <p className="text-center text-xl mb-3 opacity-80">С 14.12 по 19.12</p>
+        <p className="text-center text-xl mb-3 opacity-80">С 20.12 по 30.12</p>
 
         <h3 className="text-center text-2xl md:text-3xl font-bold mb-6">
           БИЛЕТ НА ИНТЕНСИВ
@@ -55,7 +55,7 @@ export const Tarif = () => {
           <p className="text-xl line-through opacity-50 text-orangeff7b00">
             29900₽
           </p>
-          <p className="text-3xl font-bold mt-1">25990₽</p>
+          <p className="text-3xl font-bold mt-1">26990₽</p>
         </div>
 
         <button
