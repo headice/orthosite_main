@@ -165,14 +165,7 @@ export const PaymentSuccess = () => {
           </a>
         </div>
         {(status === "pending" || status === "unknown") && (
-          <button
-            type="button"
-            onClick={fetchStatus}
-            className="mt-4 text-sm text-blue-200 underline underline-offset-4"
-            disabled={isLoading}
-          >
-            Проверить статус оплаты
-          </button>
+        
         )}
         {status === "canceled" && (
           <Link
