@@ -174,7 +174,7 @@ RAW_WINDOWS: list[PriceWindow] = [
 ]
 
 # Цена вне окон (оставил как было)
-DEFAULT_PRICE_RUB = 25990
+DEFAULT_PRICE_RUB = 26990
 
 _price_cache_date: Optional[date] = None
 _price_cache_value: Optional[PriceResponse] = None
