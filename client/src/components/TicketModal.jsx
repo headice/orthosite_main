@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { usePrice } from "../providers/PriceProvider";
 
 const emptyForm = {
@@ -134,7 +134,7 @@ export const TicketModal = ({ open, onClose }) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           description: `Билет: ${form.name} (${form.email})`,
-          return_url: window.location.origin,
+          return_url: `${window.location.origin}/payment/success`,
         }),
       });
 
@@ -152,6 +152,9 @@ export const TicketModal = ({ open, onClose }) => {
 
       const payment = await readJsonSafe(response);
       if (payment.confirmation_url) {
+        if (payment.payment_id) {
+          localStorage.setItem("last_payment_id", payment.payment_id);
+        }
         window.location.href = payment.confirmation_url;
         return;
       }

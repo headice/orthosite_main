@@ -9,7 +9,7 @@ from typing import Optional
 from uuid import uuid4
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field, HttpUrl
@@ -29,6 +29,12 @@ logger.info("BACKEND STARTED FROM: %s", BASE_DIR)
 logger.info(".env path: %s  exists=%s", ENV_PATH, ENV_PATH.exists())
 
 
+DEFAULT_ALLOWED_ORIGINS = [
+    "https://headice-orthosite-main-3b40.twc1.net",
+    "https://go-vector.ru",
+]
+
+
 def _parse_allowed_origins(raw: Optional[str]) -> list[str]:
     """Возвращает список доменов для CORS из переменной окружения.
 
@@ -38,10 +44,13 @@ def _parse_allowed_origins(raw: Optional[str]) -> list[str]:
     """
 
     if not raw:
-        return ["*"]
+        return DEFAULT_ALLOWED_ORIGINS.copy()
 
     origins = [origin.strip() for origin in raw.split(",") if origin.strip()]
-    return origins or ["*"]
+    for default_origin in DEFAULT_ALLOWED_ORIGINS:
+        if default_origin not in origins:
+            origins.append(default_origin)
+    return origins or DEFAULT_ALLOWED_ORIGINS.copy()
 
 
 ALLOWED_ORIGINS = _parse_allowed_origins(os.getenv("BACKEND_ALLOWED_ORIGINS"))
@@ -93,6 +102,11 @@ class CreatePaymentResponse(BaseModel):
     status: str
     confirmation_url: str
     amount_rub: int
+
+
+class PaymentStatusResponse(BaseModel):
+    payment_id: str
+    status: str
 
 
 # === ЦЕНОВЫЕ ОКНА ===
@@ -222,16 +236,6 @@ def wakeup_ping() -> dict[str, str]:
     return {"status": "awake", "ts": datetime.utcnow().isoformat()}
 
 
-@app.get("/debug-env")
-def debug_env():
-    return {
-        "YOOKASSA_SHOP_ID": os.getenv("YOOKASSA_SHOP_ID"),
-        "YOOKASSA_SECRET_KEY_SET": bool(os.getenv("YOOKASSA_SECRET_KEY")),
-        "BASE_DIR": str(BASE_DIR),
-        "ENV_PATH": str(ENV_PATH),
-    }
-
-
 @app.get("/price", response_model=PriceResponse)
 def get_price() -> PriceResponse:
     """Возвращает актуальную стоимость билета с учетом календаря."""
@@ -356,3 +360,66 @@ def create_payment(request: CreatePaymentRequest) -> CreatePaymentResponse:
         confirmation_url=confirmation_url,
         amount_rub=price.amount_rub,
     )
+
+
+@app.post("/yookassa/webhook")
+async def yookassa_webhook(request: Request) -> dict[str, str]:
+    payload = await request.json()
+    event = payload.get("event")
+    payment = payload.get("object", {})
+
+    logger.info("YOOKASSA WEBHOOK EVENT: %s", event)
+
+    if event == "payment.succeeded":
+        payment_id = payment.get("id")
+        amount = payment.get("amount", {}).get("value")
+        status = payment.get("status")
+
+        logger.info(
+            "PAYMENT SUCCEEDED: id=%s status=%s amount=%s",
+            payment_id,
+            status,
+            amount,
+        )
+        # TODO: Здесь стоит обновить запись заказа в БД.
+    elif event == "payment.canceled":
+        logger.info("PAYMENT CANCELED: %s", payment.get("id"))
+
+    return {"status": "ok"}
+
+
+@app.get("/payments/{payment_id}", response_model=PaymentStatusResponse)
+def get_payment_status(payment_id: str) -> PaymentStatusResponse:
+    _configure_yookassa()
+
+    try:
+        payment = Payment.find_one(payment_id)
+    except UnauthorizedError as exc:
+        logger.error("YOOKASSA unauthorized: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=(
+                "Yookassa отклонила запрос: проверь YOOKASSA_SHOP_ID и "
+                "YOOKASSA_SECRET_KEY в .env"
+            ),
+        ) from exc
+    except ApiError as exc:
+        logger.error("=== YOOKASSA API ERROR ===")
+        logger.error("Type: %s", type(exc))
+        logger.error("Message: %s", exc)
+        for attr in ("code", "description", "params", "errors"):
+            if hasattr(exc, attr):
+                logger.error("%s = %s", attr, getattr(exc, attr))
+        logger.error("=== END YOOKASSA API ERROR ===")
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Ошибка Yookassa: " + str(exc),
+        ) from exc
+    except Exception as exc:  # pylint: disable=broad-except
+        logger.exception("UNEXPECTED ERROR WHILE FETCHING PAYMENT STATUS")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Неожиданная ошибка при обращении к Yookassa",
+        ) from exc
+
+    return PaymentStatusResponse(payment_id=payment.id, status=payment.status)
