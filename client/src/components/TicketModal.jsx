@@ -134,6 +134,7 @@ export const TicketModal = ({ open, onClose }) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           description: `Билет: ${form.name} (${form.email})`,
+          email: form.email,
           return_url: `${window.location.origin}/payment/success`,
         }),
       });
