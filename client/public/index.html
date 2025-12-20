@@ -37,10 +37,18 @@
   <!-- VK Pixel -->
   <script type="text/javascript">
     (function() {
+      function sendVkHit() {
+        if (window.VK && VK.Retargeting) {
+          VK.Retargeting.Hit();
+          return true;
+        }
+        return false;
+      }
+
       function initVkPixel() {
         if (window.VK && VK.Retargeting) {
           VK.Retargeting.Init("3728550");
-          VK.Retargeting.Hit();
+          sendVkHit();
           return;
         }
         setTimeout(initVkPixel, 50);
@@ -53,6 +61,19 @@
       t.onload = initVkPixel;
       var s = document.getElementsByTagName("script")[0];
       s.parentNode.insertBefore(t, s);
+
+      // SPA route tracking for VK pixel
+      (function() {
+        var pushState = history.pushState;
+        history.pushState = function() {
+          pushState.apply(history, arguments);
+          sendVkHit();
+        };
+
+        window.addEventListener('popstate', function() {
+          sendVkHit();
+        });
+      })();
     })();
   </script>
 
