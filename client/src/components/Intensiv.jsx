@@ -43,7 +43,7 @@ export const Intensiv = () => {
                           mx-auto p-6 rounded-3xl border border-white/20 shadow-lg mb-4 md:mb-0 w-full max-w-[350px] md:max-w-none min-h-[200px] md:min-h-0 flex flex-col justify-center">
             <p className="flex items-center text-2xl font-bold">1</p>
             <p className="text-left text-base md:text-lg leading-relaxed">
-              C ведущими экспертами ФГУП ЦИТО вы разберёте ключевые патологии опорно-двигательного аппарата
+              C ведущими экспертами АО «ЦИТО» Госкорпорация Ростех вы разберёте ключевые патологии опорно-двигательного аппарата
             </p>
           </div>
 
