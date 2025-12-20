@@ -37,18 +37,23 @@
   <!-- VK Pixel -->
   <script type="text/javascript">
     (function() {
+      function initVkPixel() {
+        if (window.VK && VK.Retargeting) {
+          VK.Retargeting.Init("3728550");
+          VK.Retargeting.Hit();
+          return;
+        }
+        setTimeout(initVkPixel, 50);
+      }
+
       var t = document.createElement("script");
       t.type = "text/javascript";
       t.async = true;
       t.src = "https://vk.com/js/api/openapi.js?169";
+      t.onload = initVkPixel;
       var s = document.getElementsByTagName("script")[0];
       s.parentNode.insertBefore(t, s);
     })();
-  </script>
-
-  <script type="text/javascript">
-    VK.Retargeting.Init("3728550");
-    VK.Retargeting.Hit();
   </script>
 
   <noscript>
