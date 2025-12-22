@@ -36,7 +36,7 @@ export const Contacts = () => {
                 <img
                   src={Tg}
                   alt="Telegram"
-                  className="w-12 h-12 sm:w-12 sm:h-12 md:w-12 md:h-12 hover:opacity-80 transition-opacity"
+                  className="w-14 h-14 sm:w-12 sm:h-12 md:w-12 md:h-12 hover:opacity-80 transition-opacity"
                 />
               </a>
             </div>
