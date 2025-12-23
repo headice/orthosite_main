@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <rect width="256" height="256" fill="#030b1f" />
+  <text
+    x="50%"
+    y="50%"
+    text-anchor="middle"
+    dominant-baseline="central"
+    font-family="Montserrat, Arial, sans-serif"
+    font-size="180"
+    fill="#72E4FF"
+  >
+    Ʒ
+  </text>
+</svg>
