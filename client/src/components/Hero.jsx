@@ -205,12 +205,12 @@ export const Hero = ({ onBuyTicket }) => {
                   href="https://t.me/+x9U2vQkJ5M1mOTIy"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex shrink-0 items-center justify-center rounded-full border border-blue-200/60 p-3 hover:border-white hover:bg-white/10 transition"
+                  className="inline-flex shrink-0 items-center justify-center p-3 sm:self-center sm:translate-y-6 transition hover:opacity-80"
                 >
                   <img
                     src={Tg}
                     alt="Telegram"
-                    className="w-10 h-10 sm:w-12 sm:h-12 md:w-12 md:h-12 hover:opacity-80 transition-opacity"
+                    className="w-10 h-10 sm:w-12 sm:h-12 md:w-12 md:h-12"
                   />
                 </a>
               </div>
