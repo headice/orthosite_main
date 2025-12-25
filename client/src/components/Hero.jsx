@@ -178,7 +178,7 @@ export const Hero = ({ onBuyTicket }) => {
             </div>
 
             {/* правый спикер + кнопки */}
-            <div className="w-64 flex flex-col items-center lg:items-start text-center lg:text-left pt-8 lg:pt-16">
+            <div className="w-full max-w-[22rem] flex flex-col items-center lg:items-start text-center lg:text-left pt-8 lg:pt-16">
               <h3 className="text-2xl font-semibold">
                 Петров Дмитрий Олегович
               </h3>
@@ -188,14 +188,14 @@ export const Hero = ({ onBuyTicket }) => {
                 <div className="flex w-full flex-col gap-4">
                   <button
                     onClick={onBuyTicket}
-                    className="w-full rounded-2xl border border-blue-200/60 px-8 py-4 font-semibold uppercase tracking-wide transition hover:border-white hover:bg-white/10"
+                    className="w-full min-w-[260px] rounded-2xl border border-blue-200/60 px-8 py-4 font-semibold uppercase tracking-wide transition hover:border-white hover:bg-white/10"
                   >
                     Купить билет
                   </button>
 
                   <a
                     href="#program"
-                    className="w-full rounded-2xl border border-blue-200/60 px-8 py-4 text-center font-semibold uppercase tracking-wide transition hover:border-white hover:bg-white/10"
+                    className="w-full min-w-[260px] rounded-2xl border border-blue-200/60 px-8 py-4 text-center font-semibold uppercase tracking-wide transition hover:border-white hover:bg-white/10"
                   >
                     Программа интенсива
                   </a>
