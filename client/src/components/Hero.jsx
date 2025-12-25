@@ -205,7 +205,7 @@ export const Hero = ({ onBuyTicket }) => {
                   href="https://t.me/+x9U2vQkJ5M1mOTIy"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex shrink-0 items-center justify-center p-4 sm:self-center sm:translate-y-20 md:translate-y-24 transition hover:opacity-80"
+                  className="inline-flex shrink-0 items-center justify-center p-4 sm:self-center sm:translate-y-14 md:translate-y-16 transition hover:opacity-80"
                 >
                   <img
                     src={Tg}
