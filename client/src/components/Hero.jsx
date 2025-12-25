@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import orthos from "./img/ortho_hero.png";
 import heroBack from "./img/hero_back.jpg";
+import Tg from "./img/tetega.png";
 
 export const Hero = ({ onBuyTicket }) => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -183,7 +184,7 @@ export const Hero = ({ onBuyTicket }) => {
               </h3>
               <p className="mt-3 text-blue-200">спикер</p>
 
-              <div className="mt-6 flex flex-col gap-4">
+              <div className="mt-6 flex flex-col gap-4 items-center lg:items-start">
                 <button
                   onClick={onBuyTicket}
                   className="rounded-2xl border border-blue-200/60 px-8 py-4 font-semibold uppercase tracking-wide transition hover:border-white hover:bg-white/10"
@@ -196,6 +197,19 @@ export const Hero = ({ onBuyTicket }) => {
                   className="rounded-2xl border border-blue-200/60 px-8 py-4 text-center font-semibold uppercase tracking-wide transition hover:border-white hover:bg-white/10"
                 >
                   Программа интенсива
+                </a>
+
+                <a
+                  href="https://t.me/+x9U2vQkJ5M1mOTIy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex justify-center"
+                >
+                  <img
+                    src={Tg}
+                    alt="Telegram"
+                    className="w-14 h-14 sm:w-12 sm:h-12 md:w-12 md:h-12 hover:opacity-80 transition-opacity"
+                  />
                 </a>
               </div>
             </div>
