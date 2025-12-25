@@ -184,26 +184,28 @@ export const Hero = ({ onBuyTicket }) => {
               </h3>
               <p className="mt-3 text-blue-200">спикер</p>
 
-              <div className="mt-6 flex flex-wrap items-start gap-4">
-                <button
-                  onClick={onBuyTicket}
-                  className="rounded-2xl border border-blue-200/60 px-8 py-4 font-semibold uppercase tracking-wide transition hover:border-white hover:bg-white/10"
-                >
-                  Купить билет
-                </button>
+              <div className="mt-6 flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
+                <div className="flex w-full flex-col gap-4">
+                  <button
+                    onClick={onBuyTicket}
+                    className="w-full rounded-2xl border border-blue-200/60 px-8 py-4 font-semibold uppercase tracking-wide transition hover:border-white hover:bg-white/10"
+                  >
+                    Купить билет
+                  </button>
 
-                <a
-                  href="#program"
-                  className="rounded-2xl border border-blue-200/60 px-8 py-4 text-center font-semibold uppercase tracking-wide transition hover:border-white hover:bg-white/10"
-                >
-                  Программа интенсива
-                </a>
+                  <a
+                    href="#program"
+                    className="w-full rounded-2xl border border-blue-200/60 px-8 py-4 text-center font-semibold uppercase tracking-wide transition hover:border-white hover:bg-white/10"
+                  >
+                    Программа интенсива
+                  </a>
+                </div>
 
                 <a
                   href="https://t.me/+x9U2vQkJ5M1mOTIy"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center rounded-full border border-blue-200/60 p-3 hover:border-white hover:bg-white/10 transition"
+                  className="inline-flex shrink-0 items-center justify-center rounded-full border border-blue-200/60 p-3 hover:border-white hover:bg-white/10 transition"
                 >
                   <img
                     src={Tg}
