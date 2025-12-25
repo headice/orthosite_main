@@ -210,7 +210,7 @@ export const Hero = ({ onBuyTicket }) => {
                   <img
                     src={Tg}
                     alt="Telegram"
-                    className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16"
+                    className="w-14 h-14 sm:w-16 sm:h-16 md:w-16 md:h-16"
                   />
                 </a>
               </div>
