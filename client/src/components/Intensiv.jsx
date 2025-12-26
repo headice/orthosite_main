@@ -4,7 +4,7 @@ import whoTop from "../components/img/whup_top.png";
 import whoBottom from "../components/img/whup_rop.png";
 import Tips from "../components/img/tips.png";
 import Noga from "../components/img/noga.png";
-import Tg from "../components/img/tg.png"; // ✅ добавь/исправь путь к иконке телеграма
+import Tg from "../components/img/tetega.png";
 
 export const Intensiv = () => {
   return (
