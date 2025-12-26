@@ -99,7 +99,25 @@ export const Intensiv = () => {
                 </p>
               </div>
         </div>
+        <div className="mt-8 mx-auto bg-gradient-to-br from-[#122C58] via-[#1D478F] to-[#122C58]
+                text-center text-white px-6 py-4 rounded-[18px] shadow-lg border border-white/80 
+                shadow-white/10 max-w-3xl">
+          <p className="font-semibold text-base md:text-2xl mb-4">
+            Про это и не только вы можете узнать в нашем Телеграмм канале!
+          </p>
+          
+          <div className="flex justify-center">
+            <a href="https://t.me/+x9U2vQkJ5M1mOTIy" target="_blank" rel="noopener noreferrer">
+              <img
+                src={Tg}
+                alt="Telegram"
+                className="w-14 h-14 md:w-10 md:h-10 lg:w-14 lg:h-14 hover:opacity-80 transition-opacity"
+              />
+            </a>
+          </div>
+        </div>
 
+        
         {/* Медиа-запросы для адаптива */}
         <style jsx>{`
           /* Для разрешений 1440px - 1500px */
