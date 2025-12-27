@@ -21,7 +21,7 @@ export const Organizatori = () => {
       >
         {/* Мобильная версия - скрыта на десктопе */}
         <div className="md:hidden flex flex-col items-center gap-5 mb-6 text-center">
-          <div className="flex items-center gap-2 sm:gap-3 px-4">
+          <div className="flex items-center gap-3 sm:gap-4 px-4">
             <img
               src={Nat}
               alt="Фото организатора"
@@ -34,7 +34,7 @@ export const Organizatori = () => {
               className="h-12 sm:h-14 w-auto drop-shadow-md flex-shrink-0"
             />
 
-            <div className="space-y-1 text-left">
+            <div className="space-y-1 text-left min-w-[10rem]">
               <h3 className="text-lg sm:text-xl font-bold leading-tight">
                 Михайдарова<br />
                 Наталья Владимировна
@@ -48,31 +48,30 @@ export const Organizatori = () => {
         </div>
 
         {/* Десктоп версия - скрыта на мобильных */}
-        <div className="hidden md:flex items-start gap-6 mb-6 px-4">
-          <div className="flex items-center">
+        <div className="hidden md:flex items-center justify-between gap-6 mb-6 px-4">
+          <div className="flex items-center gap-4">
             <img
               src={Nat}
               alt="Фото организатора"
-              className="w-32 h-32 md:w-40 md:h-40 object-cover rounded-xl ml-2"
+              className="w-32 h-32 md:w-40 md:h-40 object-cover rounded-xl shadow-lg"
             />
 
-            <div className="ml-4">
-              <div className="flex items-center gap-3">
-                <h3 className="text-xl md:text-2xl font-bold whitespace-nowrap">
-                  Михайдарова Наталья Владимировна
-                </h3>
-                <img
-                  src={Logo}
-                  alt="Логотип Вектор Здоровья"
-                  className="h-10 md:h-12 w-auto"
-                />
-              </div>
-              <p className="text-blue-100 text-lg mt-1">
+            <div className="space-y-2">
+              <h3 className="text-xl md:text-2xl font-bold">
+                Михайдарова Наталья Владимировна
+              </h3>
+              <p className="text-blue-100 text-lg leading-tight">
                 Основатель центра «Вектор Здоровья»
               </p>
-              <p className="text-blue-200 mt-1">г. Артем</p>
+              <p className="text-blue-200">г. Артем</p>
             </div>
           </div>
+
+          <img
+            src={Logo}
+            alt="Логотип Вектор Здоровья"
+            className="h-12 lg:h-14 w-auto drop-shadow-md"
+          />
         </div>
         
 
