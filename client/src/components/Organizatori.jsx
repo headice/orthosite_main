@@ -1,6 +1,6 @@
 import React from "react";
 import Nat from "../components/img/Natalia.png";
-import Logo from "../assets/footer-logo.svg";
+import Logo from "../assets/9.svg";
 
 export const Organizatori = () => {
   return (
