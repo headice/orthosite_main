@@ -20,31 +20,28 @@ export const Organizatori = () => {
                  p-8 md:p-12 text-white"
       >
         {/* Мобильная версия - скрыта на десктопе */}
-        <div className="md:hidden flex flex-col items-center gap-4 mb-6 text-center px-4">
-          <div className="flex items-center justify-center gap-3 sm:gap-4 w-full">
-            <img
-              src={Nat}
-              alt="Фото организатора"
-              className="w-24 h-24 sm:w-28 sm:h-28 object-cover rounded-xl shadow-lg flex-shrink-0"
-            />
+        <div className="md:hidden flex flex-col items-center gap-5 mb-8 text-center px-6">
+          <img
+            src={Nat}
+            alt="Фото организатора"
+            className="w-28 h-28 sm:w-32 sm:h-32 object-cover rounded-xl shadow-lg"
+          />
 
-            <div className="space-y-1 text-left flex-1 min-w-0">
-              <h3 className="text-lg sm:text-xl font-bold leading-tight">
-                Михайдарова<br />
-                Наталья Владимировна
-              </h3>
-              <p className="text-blue-100 text-sm sm:text-base leading-snug">
-                Основатель центра «Вектор Здоровья»
-              </p>
-              <p className="text-blue-200 text-sm sm:text-base leading-snug">г. Артем</p>
-            </div>
+          <div className="space-y-2">
+            <h3 className="text-lg sm:text-xl font-bold leading-tight">
+              Михайдарова Наталья Владимировна
+            </h3>
+            <p className="text-blue-100 text-sm sm:text-base leading-snug">
+              Основатель центра «Вектор Здоровья»
+            </p>
+            <p className="text-blue-200 text-sm sm:text-base leading-snug">г. Артем</p>
           </div>
 
           <div className="w-full flex justify-center">
             <img
               src={Logo}
               alt="Логотип Вектор Здоровья"
-              className="h-10 sm:h-12 w-auto drop-shadow-md max-w-[7rem]"
+              className="w-3/4 max-w-[260px] h-auto drop-shadow-md"
             />
           </div>
         </div>
