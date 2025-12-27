@@ -20,37 +20,28 @@ export const Organizatori = () => {
                  p-8 md:p-12 text-white"
       >
         {/* Мобильная версия - скрыта на десктопе */}
-        <div className="md:hidden flex flex-col items-center gap-6 mb-5 text-center">
+        <div className="md:hidden flex flex-col items-center gap-5 mb-6 text-center">
           <img
             src={Nat}
             alt="Фото организатора"
-            className="w-32 h-32 object-cover rounded-xl"
+            className="w-32 h-32 object-cover rounded-xl shadow-lg"
           />
-          <div className="flex items-center gap-3">
-            <div>
-              <h3
-                className="text-lg sm:text-xl font-bold leading-tight max-[422px]:text-base max-[380px]:text-sm max-[350px]:text-[13px] max-[330px]:text-[12px]"
-              >
-                Михайдарова<br />
-                Наталья
-                Владимировна
-              </h3>
-              <p
-                className="text-blue-100 text-sm sm:text-base leading-snug mt-1 max-[422px]:text-xs max-[380px]:text-[11px] max-[330px]:text-[10px]"
-              >
-                Основатель центра «Вектор Здоровья»
-              </p>
-              <p
-                className="text-blue-200 text-sm sm:text-base leading-snug mt-0.5 max-[422px]:text-xs max-[380px]:text-[11px] max-[330px]:text-[10px]"
-              >
-                г. Артем
-              </p>
-            </div>
+          <div className="relative w-full max-w-[460px] px-6">
             <img
               src={Logo}
               alt="Логотип Вектор Здоровья"
-              className="h-10 w-auto"
+              className="absolute right-3 top-0 h-14 w-auto drop-shadow-md"
             />
+            <div className="space-y-1 pr-16">
+              <h3 className="text-xl sm:text-2xl font-bold leading-tight">
+                Михайдарова<br />
+                Наталья Владимировна
+              </h3>
+              <p className="text-blue-100 text-sm sm:text-base leading-snug">
+                Основатель центра «Вектор Здоровья»
+              </p>
+              <p className="text-blue-200 text-sm sm:text-base leading-snug">г. Артем</p>
+            </div>
           </div>
         </div>
 
