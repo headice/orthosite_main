@@ -1,5 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 
+import { ReactComponent as FooterLogo } from "../assets/footer-logo.svg";
+
 const Footer = () => {
   const location = useLocation();
 
@@ -26,30 +28,8 @@ const Footer = () => {
 
           {/* ЦЕНТР */}
           <div className="flex flex-col items-center gap-2">
-            <div className="h-12 flex items-center justify-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 6132.53 9800.18"
-                width="48"
-                height="78"
-                className="fill-white"
-              >
-                <style>{`
-                  .fil1 { fill: #FF8E16; }
-                  .fil0 { fill: white; fill-rule: nonzero; }
-                `}</style>
-
-                <g>
-                  <path
-                    className="fil0"
-                    d="M3728.68 4914c434.82..."
-                  />
-                  <path
-                    className="fil1"
-                    d="M1737.84 4307.86c0,0..."
-                  />
-                </g>
-              </svg>
+            <div className="h-20 flex items-center justify-center">
+              <FooterLogo className="h-[78px] w-[48px]" aria-hidden="true" />
             </div>
 
             <p className="text-xs sm:text-[13px] text-gray-300">
