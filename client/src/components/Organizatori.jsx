@@ -1,5 +1,6 @@
 import React from "react";
 import Nat from "../components/img/Natalia.png";
+import Logo from "../assets/9.svg";
 
 export const Organizatori = () => {
   return (
@@ -25,24 +26,31 @@ export const Organizatori = () => {
             alt="Фото организатора"
             className="w-32 h-32 object-cover rounded-xl"
           />
-          <div>
-            <h3
-              className="text-lg sm:text-xl font-bold leading-tight max-[422px]:text-base max-[380px]:text-sm max-[350px]:text-[13px] max-[330px]:text-[12px]"
-            >
-              Михайдарова<br />
-              Наталья
-              Владимировна
-            </h3>
-            <p
-              className="text-blue-100 text-sm sm:text-base leading-snug mt-1 max-[422px]:text-xs max-[380px]:text-[11px] max-[330px]:text-[10px]"
-            >
-              Основатель центра «Вектор Здоровья»
-            </p>
-            <p
-              className="text-blue-200 text-sm sm:text-base leading-snug mt-0.5 max-[422px]:text-xs max-[380px]:text-[11px] max-[330px]:text-[10px]"
-            >
-              г. Артем
-            </p>
+          <div className="flex items-center gap-3">
+            <div>
+              <h3
+                className="text-lg sm:text-xl font-bold leading-tight max-[422px]:text-base max-[380px]:text-sm max-[350px]:text-[13px] max-[330px]:text-[12px]"
+              >
+                Михайдарова<br />
+                Наталья
+                Владимировна
+              </h3>
+              <p
+                className="text-blue-100 text-sm sm:text-base leading-snug mt-1 max-[422px]:text-xs max-[380px]:text-[11px] max-[330px]:text-[10px]"
+              >
+                Основатель центра «Вектор Здоровья»
+              </p>
+              <p
+                className="text-blue-200 text-sm sm:text-base leading-snug mt-0.5 max-[422px]:text-xs max-[380px]:text-[11px] max-[330px]:text-[10px]"
+              >
+                г. Артем
+              </p>
+            </div>
+            <img
+              src={Logo}
+              alt="Логотип Вектор Здоровья"
+              className="h-10 w-auto"
+            />
           </div>
         </div>
 
@@ -58,9 +66,16 @@ export const Organizatori = () => {
 
                 
                 <div className="ml-4"> {/* Добавлен отступ слева */}
-                  <h3 className="text-xl md:text-2xl font-bold">
-                    Михайдарова Наталья Владимировна
-                  </h3>
+                  <div className="flex items-center gap-3">
+                    <h3 className="text-xl md:text-2xl font-bold whitespace-nowrap">
+                      Михайдарова Наталья Владимировна
+                    </h3>
+                    <img
+                      src={Logo}
+                      alt="Логотип Вектор Здоровья"
+                      className="h-10 md:h-12 w-auto"
+                    />
+                  </div>
                   <p className="text-blue-100 text-lg mt-1">
                     Основатель центра «Вектор Здоровья»
                   </p>
