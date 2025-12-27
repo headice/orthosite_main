@@ -41,7 +41,7 @@ export const Organizatori = () => {
             <img
               src={Logo}
               alt="Логотип Вектор Здоровья"
-              className="w-3/4 max-w-[260px] h-auto drop-shadow-md"
+              className="w-[85%] max-w-[320px] h-auto drop-shadow-md"
             />
           </div>
         </div>
@@ -69,7 +69,7 @@ export const Organizatori = () => {
           <img
             src={Logo}
             alt="Логотип Вектор Здоровья"
-            className="h-12 lg:h-14 w-auto drop-shadow-md"
+            className="h-14 lg:h-16 w-auto drop-shadow-md"
           />
         </div>
         
