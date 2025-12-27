@@ -28,12 +28,6 @@ export const Organizatori = () => {
               className="w-24 h-24 sm:w-28 sm:h-28 object-cover rounded-xl shadow-lg flex-shrink-0"
             />
 
-            <img
-              src={Logo}
-              alt="Логотип Вектор Здоровья"
-              className="h-12 sm:h-14 w-auto drop-shadow-md flex-shrink-0"
-            />
-
             <div className="space-y-1 text-left min-w-[10rem]">
               <h3 className="text-lg sm:text-xl font-bold leading-tight">
                 Михайдарова<br />
@@ -44,6 +38,12 @@ export const Organizatori = () => {
               </p>
               <p className="text-blue-200 text-sm sm:text-base leading-snug">г. Артем</p>
             </div>
+
+            <img
+              src={Logo}
+              alt="Логотип Вектор Здоровья"
+              className="h-12 sm:h-14 w-auto drop-shadow-md flex-shrink-0"
+            />
           </div>
         </div>
 
