@@ -21,14 +21,14 @@ export const Organizatori = () => {
       >
         {/* Мобильная версия - скрыта на десктопе */}
         <div className="md:hidden flex flex-col items-center gap-5 mb-6 text-center">
-          <div className="flex items-center gap-3 sm:gap-4 px-4">
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 px-4 w-full">
             <img
               src={Nat}
               alt="Фото организатора"
               className="w-24 h-24 sm:w-28 sm:h-28 object-cover rounded-xl shadow-lg flex-shrink-0"
             />
 
-            <div className="space-y-1 text-left min-w-[10rem]">
+            <div className="space-y-1 text-left flex-1 min-w-0">
               <h3 className="text-lg sm:text-xl font-bold leading-tight">
                 Михайдарова<br />
                 Наталья Владимировна
@@ -42,7 +42,7 @@ export const Organizatori = () => {
             <img
               src={Logo}
               alt="Логотип Вектор Здоровья"
-              className="h-12 sm:h-14 w-auto drop-shadow-md flex-shrink-0"
+              className="h-10 sm:h-12 w-auto drop-shadow-md flex-shrink-0 max-w-[6rem]"
             />
           </div>
         </div>
