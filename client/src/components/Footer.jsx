@@ -17,48 +17,65 @@ const Footer = () => {
             lg:grid lg:grid-cols-[1.2fr_auto_1.2fr] lg:items-start lg:gap-12
           "
         >
-          {/* ЛЕВАЯ КОЛОНКА – ИП / ИНН / ОГРН */}
+          {/* ЛЕВАЯ КОЛОНКА */}
           <div className="flex flex-col gap-1 text-sm text-center lg:text-left">
             <p>ИП Михайдарова Наталья Владимировна</p>
             <p className="mt-1">ИНН 250200007709</p>
             <p>ОГРН 317253600064398</p>
           </div>
 
-          {/* ЦЕНТР – ЛОГОТИП + КОПИРАЙТ */}
-          <div className="flex flex-col items-center text-center gap-2">
-            {/* Сюда подставь свой логотип (SVG/PNG) */}
-            {/* <img src={footerLogo} alt="Логотип" className="h-12 w-auto" /> */}
+          {/* ЦЕНТР */}
+          <div className="flex flex-col items-center gap-2">
             <div className="h-12 flex items-center justify-center">
-              {/* Временный текст вместо лого, чтобы ничего не ломалось */}
-              <span className="text-lg font-semibold tracking-wide">ЛОГО</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 6132.53 9800.18"
+                width="48"
+                height="78"
+                className="fill-white"
+              >
+                <style>{`
+                  .fil1 { fill: #FF8E16; }
+                  .fil0 { fill: white; fill-rule: nonzero; }
+                `}</style>
+
+                <g>
+                  <path
+                    className="fil0"
+                    d="M3728.68 4914c434.82..."
+                  />
+                  <path
+                    className="fil1"
+                    d="M1737.84 4307.86c0,0..."
+                  />
+                </g>
+              </svg>
             </div>
 
             <p className="text-xs sm:text-[13px] text-gray-300">
-              ©2025 Все права защищены
+              © 2025 Все права защищены
             </p>
           </div>
 
-          {/* ПРАВАЯ КОЛОНКА – ССЫЛКИ + РАЗРАБОТЧИКИ */}
+          {/* ПРАВАЯ КОЛОНКА */}
           <div className="flex flex-col items-center lg:items-end text-sm gap-3">
-            <div className="flex flex-col items-center lg:items-end gap-2 leading-snug">
-              <Link
-                to="/privacy-policy"
-                className="underline underline-offset-4 hover:text-white transition-colors text-center lg:text-right"
-              >
-                Политика обработки<br className="hidden sm:block" />
-                персональных данных
-              </Link>
+            <Link
+              to="/privacy-policy"
+              className="underline underline-offset-4 hover:text-white transition-colors text-center lg:text-right"
+            >
+              Политика обработки
+              <br className="hidden sm:block" />
+              персональных данных
+            </Link>
 
-              <button
-                type="button"
-                className="underline underline-offset-4 hover:text-white transition-colors text-center lg:text-right"
-              >
-                Пользовательское соглашение /<br className="hidden sm:block" />
-                Договор оферты
-              </button>
-            </div>
-
-           
+            <button
+              type="button"
+              className="underline underline-offset-4 hover:text-white transition-colors text-center lg:text-right"
+            >
+              Пользовательское соглашение /
+              <br className="hidden sm:block" />
+              Договор оферты
+            </button>
           </div>
         </div>
       </div>
