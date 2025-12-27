@@ -20,8 +20,8 @@ export const Organizatori = () => {
                  p-8 md:p-12 text-white"
       >
         {/* Мобильная версия - скрыта на десктопе */}
-        <div className="md:hidden flex flex-col items-center gap-5 mb-6 text-center">
-          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 px-4 w-full">
+        <div className="md:hidden flex flex-col items-center gap-4 mb-6 text-center px-4">
+          <div className="flex items-center justify-center gap-3 sm:gap-4 w-full">
             <img
               src={Nat}
               alt="Фото организатора"
@@ -38,11 +38,13 @@ export const Organizatori = () => {
               </p>
               <p className="text-blue-200 text-sm sm:text-base leading-snug">г. Артем</p>
             </div>
+          </div>
 
+          <div className="w-full flex justify-center">
             <img
               src={Logo}
               alt="Логотип Вектор Здоровья"
-              className="h-10 sm:h-12 w-auto drop-shadow-md flex-shrink-0 max-w-[6rem]"
+              className="h-10 sm:h-12 w-auto drop-shadow-md max-w-[7rem]"
             />
           </div>
         </div>
