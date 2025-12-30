@@ -52,10 +52,8 @@ export const Tarif = () => {
         </ul>
 
         <div className="text-center mb-6">
-          <p className="text-xl line-through opacity-50 text-orangeff7b00">
-            29900₽
-          </p>
-          <p className="text-3xl font-bold mt-1">26990₽</p>
+          
+          <p className="text-3xl font-bold mt-1">29990₽</p>
         </div>
 
         <button
