@@ -31,15 +31,15 @@ logger.info(".env path: %s  exists=%s", ENV_PATH, ENV_PATH.exists())
 
 
 DEFAULT_ALLOWED_ORIGINS = [
-    "https://headice-orthosite-main-3b40.twc1.net",
-    "https://go-vector.ru",
+    "https://headice-orthosite-main-3b40.twc1.net  ",
+    "https://go-vector.ru  ",
 ]
 
 
 def _parse_allowed_origins(raw: Optional[str]) -> list[str]:
     """Возвращает список доменов для CORS из переменной окружения.
 
-    Формат: "https://site.ru,https://app.site.ru,http://localhost:3000".
+    Формат: "https://site.ru  ,https://app.site.ru  ,http://localhost:3000".
     Если переменная не указана — используем DEFAULT_ALLOWED_ORIGINS.
     Всегда убираем лишние пробелы и пустые элементы.
     """
@@ -91,7 +91,7 @@ class CreatePaymentRequest(BaseModel):
     email: EmailStr = Field(..., example="user@example.com")
     return_url: HttpUrl = Field(
         ...,
-        example="https://example.com/payment/success",
+        example="https://example.com/payment/success  ",
         description="Куда вернуть клиента после оплаты",
     )
 
@@ -228,9 +228,7 @@ def _set_receipt_sent(payment_id: str) -> None:
 
 
 # === ЦЕНОВЫЕ ОКНА ===
-# Требование:
-# - с 20.12 по 30.12 цена = 26990
-# - с 31.12 по 28.01 цена = 29990
+# Обновлено: 25 000 ₽ с 1 по 11 января включительно
 
 RAW_WINDOWS: list[PriceWindow] = [
     PriceWindow(
@@ -244,14 +242,22 @@ RAW_WINDOWS: list[PriceWindow] = [
     PriceWindow(
         start_month=12,
         start_day=31,
-        end_month=1,
-        end_day=28,
+        end_month=12,
+        end_day=31,
         amount_rub=29990,
-        crosses_year=True,
+        crosses_year=False,
+    ),
+    PriceWindow(
+        start_month=1,
+        start_day=1,
+        end_month=1,
+        end_day=11,
+        amount_rub=25000,
+        crosses_year=False,
     ),
 ]
 
-# Цена вне окон (оставил как было)
+# Цена вне указанных окон (например, с 12 января и далее)
 DEFAULT_PRICE_RUB = 29990
 
 _price_cache_date: Optional[date] = None
