@@ -31,7 +31,7 @@ export const Tarif = () => {
 
       {/* === КАРТОЧКА ТАРИФА === */}
       <div className="w-full max-w-md rounded-[32px] border border-white/20 shadow-white/10 bg-gradient-to-br from-[#122C58] via-[#1D478F] to-[#122C58] p-8 text-white shadow-lg">
-      <p className="text-center text-xl mb-3 opacity-80">С 01.01 по 11.01</p>
+      
 
      
         
