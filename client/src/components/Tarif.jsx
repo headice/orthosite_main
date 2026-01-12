@@ -33,9 +33,7 @@ export const Tarif = () => {
       <div className="w-full max-w-md rounded-[32px] border border-white/20 shadow-white/10 bg-gradient-to-br from-[#122C58] via-[#1D478F] to-[#122C58] p-8 text-white shadow-lg">
       <p className="text-center text-xl mb-3 opacity-80">С 01.01 по 11.01</p>
 
-        <h2 className="text-center text-2xl md:text-1xl font-bold mb-2">
-          НОВОГОДНИЙ БОНУС!
-        </h2>
+     
         
         <h3 className="text-center text-2xl md:text-3xl font-bold mb-6">
           БИЛЕТ НА ИНТЕНСИВ
@@ -56,10 +54,8 @@ export const Tarif = () => {
         </ul>
 
         <div className="text-center mb-6">
-          <p className="text-xl line-through opacity-50 text-orangeff7b00">
-            29900₽
-          </p>
-          <p className="text-3xl font-bold mt-1">25000₽</p>
+        
+          <p className="text-3xl font-bold mt-1">29000₽</p>
         </div>
 
         <button
