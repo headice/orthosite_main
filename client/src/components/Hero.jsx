@@ -150,8 +150,8 @@ export const Hero = ({ onBuyTicket }) => {
             </p>
 
             <div className="mt-6 flex flex-wrap gap-6 text-sm text-blue-100">
-              <span>29–30 января 2026</span>
-              <span>Новосибирск • Бизнес-центр отеля «Cosmos Novosibirsk»</span>
+              <span>27-28 марта 2026</span>
+              <span>Владивосток • </span>
             </div>
           </div>
 
