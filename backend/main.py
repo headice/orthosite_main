@@ -31,7 +31,7 @@ logger.info(".env path: %s  exists=%s", ENV_PATH, ENV_PATH.exists())
 
 
 DEFAULT_ALLOWED_ORIGINS = [
-    "https://headice-orthosite-main-3b40.twc1.net",
+    "headice-orthosite-main-fbf7.twc1.net",
     "https://go-vector.ru",
 ]
 
