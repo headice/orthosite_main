@@ -14,8 +14,8 @@ export const Contacts = () => {
 
           <div className="w-full max-w-xs">
             <p className="text-blue-100 font-semibold text-sm md:text-xs lg:text-base">Адрес:</p>
-            <p className="text-blue-100 text-sm md:text-xs lg:text-base">Новосибирск, ул. Шамшурина, 37</p>
-            <p className="mb-4 text-blue-100 text-sm md:text-xs lg:text-base">Бизнес-центр отеля «Cosmos Novosibirsk»</p>
+            <p className="text-blue-100 text-sm md:text-xs lg:text-base">Владивосток, </p>
+            <p className="mb-4 text-blue-100 text-sm md:text-xs lg:text-base"></p>
 
             <p className="text-blue-100 font-semibold text-sm md:text-xs lg:text-base">Контакты:</p>
             <p className="mb-4">
@@ -74,7 +74,7 @@ export const Contacts = () => {
               loading="lazy"
               style={{ border: "none" }}
               className="rounded-3xl"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2286.612435603735!2d82.8995946!3d55.0324843!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x42dfe4318146ca25%3A0xbcbe7bf7e277b74f!2sCosmos%20Novosibirsk%20Hotel!5e0!3m2!1sru!2sru!4v1765174172446!5m2!1sru!2sru"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d186242.85735465912!2d131.95345799999998!3d43.166587!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x5fb39cba5249d485%3A0x186704d4dd967e35!2z0JLQu9Cw0LTQuNCy0L7RgdGC0L7Quiwg0J_RgNC40LzQvtGA0YHQutC40Lkg0LrRgNCw0Lk!5e0!3m2!1sru!2sru!4v1770125973260!5m2!1sru!2sru"
             ></iframe>
           </div>
         </div>
