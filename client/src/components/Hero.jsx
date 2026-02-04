@@ -150,7 +150,7 @@ export const Hero = ({ onBuyTicket }) => {
             </p>
 
             <div className="mt-6 flex flex-wrap gap-6 text-sm text-blue-100">
-              <span>27-28 марта 2026</span>
+              <span>28-29 марта 2026</span>
               <span>Владивосток • </span>
             </div>
           </div>
