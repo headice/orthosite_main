@@ -83,7 +83,7 @@ export const Tarif = () => {
           {/* Второй блок */}
           <div className="flex justify-between items-start text-lg md:text-2xl">
             <p className="leading-tight mr-4">
-              С 19 февраля по 26 марта
+              С 19 февраля по 27 марта
               стоимость <b>⠀⠀⠀</b> <b className="text-orangeff7b00 text-2xl md:text-3xl text-right">
               30000₽
             </b>
