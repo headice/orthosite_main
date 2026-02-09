@@ -238,7 +238,7 @@ RAW_WINDOWS: list[PriceWindow] = [
         start_day=2,
         end_month=2,
         end_day=18,
-        amount_rub=1,
+        amount_rub=24990,
         crosses_year=False,
     ),
     PriceWindow(
@@ -246,13 +246,13 @@ RAW_WINDOWS: list[PriceWindow] = [
         start_day=19,
         end_month=3,
         end_day=26,
-        amount_rub=1,
+        amount_rub=30000,
         crosses_year=False,
     ),
 ]
 
 # Цена вне указанных окон (всегда)
-DEFAULT_PRICE_RUB = 1
+DEFAULT_PRICE_RUB = 30000
 
 _price_cache_date: Optional[date] = None
 _price_cache_value: Optional[PriceResponse] = None
@@ -566,3 +566,5 @@ def get_payment_status(payment_id: str) -> PaymentStatusResponse:
 
     _update_payment_status(payment.id, payment.status)
     return PaymentStatusResponse(payment_id=payment.id, status=payment.status)
+
+сделай пока что цену 1 р, остальное не меняй , только цену
