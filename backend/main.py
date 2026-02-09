@@ -567,4 +567,4 @@ def get_payment_status(payment_id: str) -> PaymentStatusResponse:
     _update_payment_status(payment.id, payment.status)
     return PaymentStatusResponse(payment_id=payment.id, status=payment.status)
 
-сделай пока что цену 1 р, остальное не меняй , только цену
+
