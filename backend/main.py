@@ -31,7 +31,7 @@ logger.info(".env path: %s  exists=%s", ENV_PATH, ENV_PATH.exists())
 
 
 DEFAULT_ALLOWED_ORIGINS = [
-    "https://headice-orthosite-main-3b40.twc1.net",
+    "headice-orthosite-main-fbf7.twc1.net",
     "https://go-vector.ru",
 ]
 
@@ -39,7 +39,7 @@ DEFAULT_ALLOWED_ORIGINS = [
 def _parse_allowed_origins(raw: Optional[str]) -> list[str]:
     """Возвращает список доменов для CORS из переменной окружения.
 
-    Формат: "https://site.ru,https://app.site.ru,http://localhost:3000".
+    Формат: "https://site.ru  ,https://app.site.ru  ,http://localhost:3000".
     Если переменная не указана — используем DEFAULT_ALLOWED_ORIGINS.
     Всегда убираем лишние пробелы и пустые элементы.
     """
@@ -91,7 +91,7 @@ class CreatePaymentRequest(BaseModel):
     email: EmailStr = Field(..., example="user@example.com")
     return_url: HttpUrl = Field(
         ...,
-        example="https://example.com/payment/success",
+        example="https://example.com/payment/success  ",
         description="Куда вернуть клиента после оплаты",
     )
 
@@ -228,31 +228,31 @@ def _set_receipt_sent(payment_id: str) -> None:
 
 
 # === ЦЕНОВЫЕ ОКНА ===
-# Требование:
-# - с 20.12 по 30.12 цена = 26990
-# - с 31.12 по 28.01 цена = 29990
+# Окна цен:
+# С 02.02-18.02 - 24990 руб
+# С 19.02-26.03 - 30000 руб
 
 RAW_WINDOWS: list[PriceWindow] = [
     PriceWindow(
-        start_month=12,
-        start_day=20,
-        end_month=12,
-        end_day=30,
-        amount_rub=26990,
+        start_month=2,
+        start_day=2,
+        end_month=2,
+        end_day=18,
+        amount_rub=24990,
         crosses_year=False,
     ),
     PriceWindow(
-        start_month=12,
-        start_day=31,
-        end_month=1,
-        end_day=28,
-        amount_rub=29990,
-        crosses_year=True,
+        start_month=2,
+        start_day=19,
+        end_month=3,
+        end_day=26,
+        amount_rub=30000,
+        crosses_year=False,
     ),
 ]
 
-# Цена вне окон (оставил как было)
-DEFAULT_PRICE_RUB = 26990
+# Цена вне указанных окон (всегда)
+DEFAULT_PRICE_RUB = 30000
 
 _price_cache_date: Optional[date] = None
 _price_cache_value: Optional[PriceResponse] = None
@@ -265,8 +265,6 @@ def _materialize_window(window: PriceWindow, anchor_year: int) -> tuple[date, da
     """
     start = date(anchor_year, window.start_month, window.start_day)
 
-    # Если окно помечено как crosses_year, то конец может быть в следующем году.
-    # Условие end_month < start_month гарантирует, что действительно "переходим через год".
     end_year = (
         anchor_year + 1
         if window.crosses_year and window.end_month < window.start_month
@@ -277,32 +275,19 @@ def _materialize_window(window: PriceWindow, anchor_year: int) -> tuple[date, da
 
 
 def resolve_price(target_date: Optional[date] = None) -> PriceResponse:
-    """Определяет цену на указанную дату.
-
-    Делает это безопасно для окон, которые пересекают границу года,
-    без "магии" и без зависимости от порядка окон.
-    """
+    """Определяет цену на указанную дату."""
     today = target_date or datetime.utcnow().date()
 
-    # Нам достаточно проверить 2 якоря: прошлый год и текущий.
-    # Это покрывает окна вида "31.12–28.01" как в начале года, так и в конце.
-    anchors = (today.year - 1, today.year)
-
     for window in RAW_WINDOWS:
-        for anchor in anchors:
-            start, end = _materialize_window(window, anchor)
-            if start <= today <= end:
-                return PriceResponse(amount_rub=window.amount_rub, window=window)
+        start, end = _materialize_window(window, today.year)
+        if start <= today <= end:
+            return PriceResponse(amount_rub=window.amount_rub, window=window)
 
     return PriceResponse(amount_rub=DEFAULT_PRICE_RUB, window=None)
 
 
 def get_cached_price(target_date: Optional[date] = None) -> PriceResponse:
-    """Возвращает цену, кэшируя результат на уровне текущей даты.
-
-    Чтобы не дергать расчеты на каждый запрос, держим цену в памяти на
-    протяжении суток. Как только дата сменится, кэш будет пересчитан.
-    """
+    """Возвращает цену, кэшируя результат на уровне текущей даты."""
     global _price_cache_date, _price_cache_value  # pylint: disable=global-statement
 
     today = target_date or datetime.utcnow().date()
@@ -322,7 +307,6 @@ def _configure_yookassa() -> None:
     if getattr(_configure_yookassa, "_configured", False):
         return
 
-    # Блокируем повторную конфигурацию при высоких нагрузках
     if not hasattr(_configure_yookassa, "_lock"):
         _configure_yookassa._lock = Lock()  # type: ignore[attr-defined]
 
@@ -385,7 +369,7 @@ def wakeup_ping() -> dict[str, str]:
 
 @app.get("/price", response_model=PriceResponse)
 def get_price() -> PriceResponse:
-    """Возвращает актуальную стоимость билета с учетом календаря."""
+    """Возвращает актуальную стоимость билета."""
     return get_cached_price()
 
 
@@ -405,15 +389,6 @@ def create_payment(request: CreatePaymentRequest) -> CreatePaymentResponse:
 
     amount_str = f"{price.amount_rub:.2f}"
 
-    # ОЧЕНЬ ВАЖНО: vat_code и tax_system_code должны совпадать с тем,
-    # что у тебя включено в кабинете ЮKassa.
-    #
-    # Пример ниже: "Без НДС" + УСН (доходы).
-    #
-    # Если у тебя в кабинете другие настройки — надо поправить:
-    #   - vat_code: 1 — Без НДС, 2 — 0%, 3 — 10%, 4 — 20%, 5 — 10/110, 6 — 20/120
-    #   - tax_system_code: 1–6 в зависимости от системы налогообложения.
-
     receipt = {
         "customer": {
             "email": str(request.email),
@@ -432,9 +407,7 @@ def create_payment(request: CreatePaymentRequest) -> CreatePaymentResponse:
                 "payment_mode": "full_prepayment",
             }
         ],
-        # если у тебя включено несколько систем налогобложения,
-        # ЮKassa может требовать tax_system_code:
-        # "tax_system_code": 2,  # пример: УСН (доходы)
+        # "tax_system_code": 2,  # при необходимости раскомментируй и выставь свой код
     }
 
     try:
@@ -463,11 +436,9 @@ def create_payment(request: CreatePaymentRequest) -> CreatePaymentResponse:
         ) from exc
 
     except ApiError as exc:
-        # Это ошибка именно от ЮKassa → печатаем подробности в лог
         logger.error("=== YOOKASSA API ERROR ===")
         logger.error("Type: %s", type(exc))
         logger.error("Message: %s", exc)
-        # У разных версий SDK поля могут отличаться, поэтому аккуратно:
         for attr in ("code", "description", "params", "errors"):
             if hasattr(exc, attr):
                 logger.error("%s = %s", attr, getattr(exc, attr))
@@ -479,7 +450,6 @@ def create_payment(request: CreatePaymentRequest) -> CreatePaymentResponse:
         ) from exc
 
     except Exception as exc:  # pylint: disable=broad-except
-        # Любая другая неожиданная ошибка
         logger.exception("UNEXPECTED ERROR WHILE CREATING PAYMENT")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

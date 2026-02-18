@@ -31,8 +31,10 @@ export const Tarif = () => {
 
       {/* === КАРТОЧКА ТАРИФА === */}
       <div className="w-full max-w-md rounded-[32px] border border-white/20 shadow-white/10 bg-gradient-to-br from-[#122C58] via-[#1D478F] to-[#122C58] p-8 text-white shadow-lg">
-        <p className="text-center text-xl mb-3 opacity-80">С 20.12 по 30.12</p>
+      
 
+     
+        
         <h3 className="text-center text-2xl md:text-3xl font-bold mb-6">
           БИЛЕТ НА ИНТЕНСИВ
         </h3>
@@ -53,9 +55,9 @@ export const Tarif = () => {
 
         <div className="text-center mb-6">
           <p className="text-xl line-through opacity-50 text-orangeff7b00">
-            29900₽
+            30000₽
           </p>
-          <p className="text-3xl font-bold mt-1">26990₽</p>
+          <p className="text-3xl font-bold mt-1">24990₽</p>
         </div>
 
         <button
@@ -70,9 +72,9 @@ export const Tarif = () => {
           {/* Первый блок */}
           <div className="flex justify-between items-start text-lg md:text-2xl">
             <p className="leading-tight mr-4">
-              с 20 декабря по 30 декабря
+              с 03 февраля по 18 февраля
               стоимость <b>⠀⠀⠀</b>  <b className="text-orangeff7b00 text-2xl md:text-3xl text-right">
-              26990₽
+              24990₽
             </b>
             </p>
           
@@ -81,9 +83,9 @@ export const Tarif = () => {
           {/* Второй блок */}
           <div className="flex justify-between items-start text-lg md:text-2xl">
             <p className="leading-tight mr-4">
-              С 31 декабря по 28 января
+              С 19 февраля по 27 марта
               стоимость <b>⠀⠀⠀</b> <b className="text-orangeff7b00 text-2xl md:text-3xl text-right">
-              29990₽
+              30000₽
             </b>
             </p>
             
