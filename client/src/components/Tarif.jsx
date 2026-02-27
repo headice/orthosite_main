@@ -54,10 +54,8 @@ export const Tarif = () => {
         </ul>
 
         <div className="text-center mb-6">
-          <p className="text-xl line-through opacity-50 text-orangeff7b00">
-            30000₽
-          </p>
-          <p className="text-3xl font-bold mt-1">24990₽</p>
+          
+          <p className="text-3xl font-bold mt-1">30000₽</p>
         </div>
 
         <button
@@ -72,7 +70,7 @@ export const Tarif = () => {
           {/* Первый блок */}
           <div className="flex justify-between items-start text-lg md:text-2xl">
             <p className="leading-tight mr-4">
-              с 03 февраля по 18 февраля
+              с 03 февраля по 20 февраля
               стоимость <b>⠀⠀⠀</b>  <b className="text-orangeff7b00 text-2xl md:text-3xl text-right">
               24990₽
             </b>
@@ -83,7 +81,7 @@ export const Tarif = () => {
           {/* Второй блок */}
           <div className="flex justify-between items-start text-lg md:text-2xl">
             <p className="leading-tight mr-4">
-              С 19 февраля по 27 марта
+              С 21 февраля по 27 марта
               стоимость <b>⠀⠀⠀</b> <b className="text-orangeff7b00 text-2xl md:text-3xl text-right">
               30000₽
             </b>

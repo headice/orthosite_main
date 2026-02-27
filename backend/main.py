@@ -227,62 +227,17 @@ def _set_receipt_sent(payment_id: str) -> None:
             record["receipt_sent"] = True
 
 
-# === ЦЕНОВЫЕ ОКНА ===
-# Окна цен:
-# С 02.02-18.02 - 24990 руб
-# С 19.02-26.03 - 30000 руб
+# === ЦЕНА (ФИКСИРОВАННАЯ) ===
+# Цена всегда 30000 руб.
 
-RAW_WINDOWS: list[PriceWindow] = [
-    PriceWindow(
-        start_month=2,
-        start_day=2,
-        end_month=2,
-        end_day=18,
-        amount_rub=24990,
-        crosses_year=False,
-    ),
-    PriceWindow(
-        start_month=2,
-        start_day=19,
-        end_month=3,
-        end_day=26,
-        amount_rub=30000,
-        crosses_year=False,
-    ),
-]
-
-# Цена вне указанных окон (всегда)
 DEFAULT_PRICE_RUB = 30000
 
 _price_cache_date: Optional[date] = None
 _price_cache_value: Optional[PriceResponse] = None
 
 
-def _materialize_window(window: PriceWindow, anchor_year: int) -> tuple[date, date]:
-    """Преобразует окно PriceWindow в реальные даты (start, end) для anchor_year.
-
-    Для окна, пересекающего год (например 31.12–28.01), end будет в anchor_year+1.
-    """
-    start = date(anchor_year, window.start_month, window.start_day)
-
-    end_year = (
-        anchor_year + 1
-        if window.crosses_year and window.end_month < window.start_month
-        else anchor_year
-    )
-    end = date(end_year, window.end_month, window.end_day)
-    return start, end
-
-
 def resolve_price(target_date: Optional[date] = None) -> PriceResponse:
-    """Определяет цену на указанную дату."""
-    today = target_date or datetime.utcnow().date()
-
-    for window in RAW_WINDOWS:
-        start, end = _materialize_window(window, today.year)
-        if start <= today <= end:
-            return PriceResponse(amount_rub=window.amount_rub, window=window)
-
+    """Всегда возвращает фиксированную цену."""
     return PriceResponse(amount_rub=DEFAULT_PRICE_RUB, window=None)
 
 

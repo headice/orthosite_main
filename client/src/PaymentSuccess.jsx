@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
 const STATUS_LABELS = {
@@ -6,7 +6,7 @@ const STATUS_LABELS = {
     title: "Спасибо за покупку!",
     eyebrow: "Оплата завершена",
     description:
-      "Мы получили оплату и скоро отправим письмо с подтверждением и деталями участия на ваш email.",
+      "Мы получили оплату и скоро отправим чек на ваш email.",
   },
   canceled: {
     title: "Оплата отменена",
@@ -32,6 +32,11 @@ export const PaymentSuccess = () => {
   const [status, setStatus] = useState("pending");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const pollTimerRef = useRef(null);
+  const pollAttemptsRef = useRef(0);
+
+  const MAX_POLL_ATTEMPTS = 10;
+  const POLL_INTERVAL_MS = 3000;
 
   const searchParams = useMemo(
     () => new URLSearchParams(window.location.search),
@@ -105,6 +110,21 @@ export const PaymentSuccess = () => {
     }
   }, [apiBaseUrl, paymentId]);
 
+  const schedulePoll = useCallback(() => {
+    if (pollTimerRef.current) {
+      clearTimeout(pollTimerRef.current);
+    }
+
+    if (pollAttemptsRef.current >= MAX_POLL_ATTEMPTS) {
+      return;
+    }
+
+    pollAttemptsRef.current += 1;
+    pollTimerRef.current = setTimeout(() => {
+      fetchStatus();
+    }, POLL_INTERVAL_MS);
+  }, [fetchStatus]);
+
   useEffect(() => {
     const statusFromQuery = searchParams.get("status");
     if (statusFromQuery === "canceled" || statusFromQuery === "cancelled") {
@@ -113,6 +133,18 @@ export const PaymentSuccess = () => {
 
     fetchStatus();
   }, [fetchStatus, searchParams]);
+
+  useEffect(() => {
+    if (status === "pending" && !isLoading) {
+      schedulePoll();
+    }
+
+    return () => {
+      if (pollTimerRef.current) {
+        clearTimeout(pollTimerRef.current);
+      }
+    };
+  }, [isLoading, schedulePoll, status]);
 
   const displayStatus = STATUS_LABELS[status] || STATUS_LABELS.unknown;
 
