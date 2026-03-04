@@ -3,40 +3,28 @@ import { Hero } from "./components/Hero";
 import { TicketModal } from "./components/TicketModal";
 import { Intensiv } from "./components/Intensiv";
 import { Spikeri } from "./components/Spikeri";
-import  Footer from "./components/Footer.jsx"
-import { RunningString } from "./components/RunningString"
+import { RunningString } from "./components/RunningString";
 import Programma from "./components/Programma";
 import { Tarif } from "./components/Tarif";
 import { Organizatori } from "./components/Organizatori";
 import { Contacts } from "./components/Contacts";
+import { ConsultationModal } from "./components/ConsultationModal";
 
-// фон после hero
 import bgImage from "./components/img/after_hero_back.png";
-
-
-
-
-
-// картинки для секции "Кому будет полезен"
-
-
-
 
 export const Home = () => {
   const [isModalOpen, setModalOpen] = useState(false);
-
-  const openModal = () => setModalOpen(true);
-  const closeModal = () => setModalOpen(false);
+  const [isConsultationOpen, setConsultationOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-[#030b1f] text-white scroll-smooth ">
-      {/* Hero */}
-      <Hero onBuyTicket={openModal} />
+      <Hero
+        onBuyTicket={() => setModalOpen(true)}
+        onConsultation={() => setConsultationOpen(true)}
+      />
 
-      {/* бегущая строка */}
-      
-      <RunningString></RunningString>
-      {/* ОБОЛОЧКА С ФОНОМ */}
+      <RunningString />
+
       <div
         className="bg-cover bg-center bg-no-repeat"
         style={{
@@ -44,28 +32,17 @@ export const Home = () => {
         }}
       >
         <main className="mx-auto flex w-full max-w-6xl flex-col gap-20 px-4 py-16">
-          {/* Кому будет полезен интенсив */}
-             <Intensiv></Intensiv>
-          {/* Программа */}
-         <Programma></Programma>
-
-          {/* Спикеры */}
-          <Spikeri></Spikeri>
-
-          {/* Тарифы */}
-          <Tarif></Tarif>
-
-          {/* Организаторы */}
-          <Organizatori></Organizatori>
-
-          {/* Контакты */}
-          <Contacts></Contacts>
+          <Intensiv />
+          <Programma />
+          <Spikeri />
+          <Tarif />
+          <Organizatori />
+          <Contacts />
         </main>
-
-        
       </div>
 
-      <TicketModal open={isModalOpen} onClose={closeModal} />
+      <TicketModal open={isModalOpen} onClose={() => setModalOpen(false)} />
+      <ConsultationModal open={isConsultationOpen} onClose={() => setConsultationOpen(false)} />
     </div>
   );
 };

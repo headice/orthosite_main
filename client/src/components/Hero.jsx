@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import orthos from "./img/ortho_hero.png";
 import heroBack from "./img/hero_back.jpg";
+import { Link } from "react-router-dom";
 
-export const Hero = ({ onBuyTicket }) => {
+export const Hero = ({ onBuyTicket, onConsultation }) => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -198,12 +199,26 @@ export const Hero = ({ onBuyTicket }) => {
                 Купить билет
               </button>
 
-              <a
-                href="#program"
+              <Link
+                to="/catalog?type=services"
                 className="rounded-2xl border border-blue-200/60 px-8 py-4 text-center font-semibold uppercase tracking-wide transition hover:border-white hover:bg-white/10"
               >
-                Программа форума
-              </a>
+                Все услуги
+              </Link>
+
+              <Link
+                to="/catalog?type=products"
+                className="rounded-2xl border border-blue-200/60 px-8 py-4 text-center font-semibold uppercase tracking-wide transition hover:border-white hover:bg-white/10"
+              >
+                Все товары
+              </Link>
+
+              <button
+                onClick={onConsultation}
+                className="rounded-2xl border border-blue-200/60 px-8 py-4 font-semibold uppercase tracking-wide transition hover:border-white hover:bg-white/10"
+              >
+                Консультация
+              </button>
             </div>
           </div>
         </div>
